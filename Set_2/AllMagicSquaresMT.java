@@ -1,3 +1,8 @@
+package Set_2;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -13,7 +18,7 @@ import java.util.regex.Pattern;
  ****/
 
 public class AllMagicSquaresMT {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		// Checks if user wants to execute program again
 		do {
 			spaceScreen();
@@ -28,11 +33,12 @@ public class AllMagicSquaresMT {
 	
 	private static int m_boardSize;
 	private static int m_magicNumber;
-	private static void ProblemOne() {
+	// Solves the problem
+	private static void ProblemOne() throws IOException {
 		System.out.print("Enter size [3-20] : ");
 		do {
 			m_boardSize = (int)getUserNum();
-		} while (!(m_boardSize > 2) || !(m_boardSize < 21));
+		} while (!(m_boardSize >= 3) || !(m_boardSize <= 20));
 		System.out.println("Magic Square Order : " + m_boardSize);
 		
 		m_magicNumber = (int)(m_boardSize * (Math.pow(m_boardSize, 2) + 1)) / 2;
@@ -41,16 +47,20 @@ public class AllMagicSquaresMT {
 		System.out.println("Magic Square Order : " + m_magicNumber + "\n");
 	}
 	
+	// Spaces the console a bit (replaces system('cls'))
 	private static void spaceScreen() {
 		for (int i = 0; i < 3; i++) System.out.println();
 	}
 	
+	// Updates game board visuals
 	private static void displayBoard() {
 		m_displayBoard = m_gameBoard;
 		fillBoard();
 		for(String[] _arr : m_displayBoard)
 			System.out.println(arrayToString(_arr, longestStringInArray(m_displayBoard)));
 	}
+	
+	// Fills the game board depending on magic number
 	private static void fillBoard() {
 		boolean _oddBoard = m_boardSize % 2 != 0, _singlyEvenBoard = (float)m_magicNumber / 2 == (float)(m_magicNumber / 2);
 		if(m_boardSize % 2 != 0) {
@@ -64,9 +74,9 @@ public class AllMagicSquaresMT {
 		}
 	}
 	
+	// Reorders the board as an odd magic square
 	private static int OddBoard(int p_x, int p_y, int p_size, int p_counter) {
-		int _outer = m_gameMargins + m_gameBorder; int _max = m_displayBoard.length - 1;
-		int _xMin = p_x + _outer, _xMax = p_x + p_size + _outer - 1, _yMin = p_y + _outer, _yMax = p_y + p_size + _outer - 1;
+		int _xMin = p_x + m_outer, _xMax = p_x + p_size + m_outer - 1, _yMin = p_y + m_outer, _yMax = p_y + p_size + m_outer - 1;
 		int _x = _xMin; int _y = _yMin;
 		
 		_x += (p_size - 1) / 2;
@@ -74,9 +84,9 @@ public class AllMagicSquaresMT {
 		do {
 			boolean __yEdge = (_y - 1 < _yMin), ___xEdge = (_x + 1 > _xMax);
 			boolean __isBlank = false;
-			int __yWrap = p_y + ((p_size + _y - _outer - 1) % p_size);
-			int __xWrap = p_x + ((p_size + _x - _outer + 1) % p_size);
-			if(__yWrap + _outer >= 0 && __xWrap + _outer < m_displayBoard.length) __isBlank = !isNumber(m_displayBoard[__yWrap + _outer][__xWrap + _outer]);
+			int __yWrap = p_y + ((p_size + _y - m_outer - 1) % p_size);
+			int __xWrap = p_x + ((p_size + _x - m_outer + 1) % p_size);
+			if(__yWrap + m_outer >= 0 && __xWrap + m_outer < m_displayBoard.length) __isBlank = !isNumber(m_displayBoard[__yWrap + m_outer][__xWrap + m_outer]);
 			
 			if(!___xEdge && __isBlank) _x += 1;
 			if(!__yEdge && __isBlank) _y -= 1;
@@ -91,79 +101,77 @@ public class AllMagicSquaresMT {
 		} while (array2DContains(m_displayBoard, m_boardAssets[0], _xMin, _yMin, _xMax, _yMax));
 		return p_counter;
 	}
+	// Reorders the board as a singly even magic square
 	private static void SinglyEvenBoard() {
-		int _outer = m_gameMargins + m_gameBorder;
-		int _x = _outer; int _y = _outer; int _max = m_displayBoard.length - 1;
-		int _xMin = _outer, _xMax = _max - _outer, _yMin = _outer, _yMax = _max - _outer;
 		int _counter = 1;
 		int _flipRange = (m_boardSize - 6) / 4 * 2 + 3;
 		
 		_counter = OddBoard(0, 0, _flipRange, _counter);
 		_counter = OddBoard(m_boardSize / 2, m_boardSize / 2, _flipRange, _counter);
 		_counter = OddBoard(m_boardSize / 2, 0, _flipRange, _counter);
-		_counter = OddBoard(0, m_boardSize / 2, _flipRange, _counter);
+		OddBoard(0, m_boardSize / 2, _flipRange, _counter);
 		
 		_flipRange = (m_boardSize - 6) / 4 + 2;
 		
-		for(int i = _outer; i < _flipRange + _outer; i++) {
-			for (int j = _outer; j < _outer + m_boardSize / 2; j++) {
-				if(i < _flipRange - 1 + _outer) {
-					if (j == _outer + m_boardSize / 2 / 2)
+		for(int i = m_outer; i < _flipRange + m_outer; i++) {
+			for (int j = m_outer; j < m_outer + m_boardSize / 2; j++) {
+				if(i < _flipRange - 1 + m_outer) {
+					if (j == m_outer + m_boardSize / 2 / 2)
 						array2DSwap(m_displayBoard, i + 1, j, i + 1, j + m_boardSize / 2);
 					else array2DSwap(m_displayBoard, i, j, i, j + m_boardSize / 2);
 				}
 			}
 		}
-		for(int i = _outer + m_boardSize - _flipRange + 2; i < _outer + m_boardSize; i++) {
-			for (int j = _outer; j < _outer + m_boardSize / 2; j++) {
+		for(int i = m_outer + m_boardSize - _flipRange + 2; i < m_outer + m_boardSize; i++) {
+			for (int j = m_outer; j < m_outer + m_boardSize / 2; j++) {
 					array2DSwap(m_displayBoard, i, j, i, j + m_boardSize / 2);
 			}
 		}
 	}
+	// Reorders the board as a doubly even magic square
 	private static void DoublyEvenBoard() {
-		int _outer = m_gameMargins + m_gameBorder;
-		int _x = _outer; int _y = _outer; int _max = m_displayBoard.length - 1;
+		int _x = m_outer; int _y = m_outer; int _max = m_outer + m_boardSize - 1;
 		int _counter = 1;
 		
 		boolean __down = true;
-		boolean ___yEdge = false;
-		boolean ___xEdge = false;
+		boolean ___yEdge;
+		boolean ___xEdge;
 		do {
 			if(__down) {
-				___xEdge = (_x > _max - _outer);
-				if(___xEdge) { _y += 1; _x = _outer; }
-				___yEdge = (_y > _max - _outer);
+				___xEdge = (_x > _max);
+				if(___xEdge) { _y += 1; _x = m_outer; }
+				___yEdge = (_y > _max);
 			} else {
-				___xEdge = (_x < _outer);
-				if(___xEdge) { _y -= 1; _x = _max - _outer; }
-				___yEdge = (_y < _outer);
+				___xEdge = (_x < m_outer);
+				if(___xEdge) { _y -= 1; _x = _max; }
+				___yEdge = (_y < m_outer);
 			}
 			
 			if(___yEdge) {
 				_counter = 1;
 				if(__down) {
-					_x = _max - _outer;
-					_y = _max - _outer;
+					_x = _max;
+					_y = _max;
 				} else {
-					_x = _outer;
-					_y = _outer;
+					_x = m_outer;
+					_y = m_outer;
 				}
 				__down = !__down;
 			}
 			
 			if(__down) {
-				if(_x - _outer < m_boardSize / 4 || _x - _outer >= m_boardSize * 3 / 4 )
-					if(_y - _outer < m_boardSize / 4 || _y - _outer >= m_boardSize * 3 / 4 )
+				if(_x - m_outer < m_boardSize / 4 || _x - m_outer >= m_boardSize * 3 / 4 )
+					if(_y - m_outer < m_boardSize / 4 || _y - m_outer >= m_boardSize * 3 / 4 )
 						m_displayBoard[_y][_x] = _counter + "";
-				if(_y - _outer >= m_boardSize / 4 && _y - _outer < m_boardSize * 3 / 4 )
-					if(_x - _outer >= m_boardSize / 4 && _x - _outer < m_boardSize * 3 / 4 )
+				if(_y - m_outer >= m_boardSize / 4 && _y - m_outer < m_boardSize * 3 / 4 )
+					if(_x - m_outer >= m_boardSize / 4 && _x - m_outer < m_boardSize * 3 / 4 )
 						m_displayBoard[_y][_x] = _counter + "";
 			} else {
-				if(_x - _outer >= m_boardSize / 4 && _x - _outer < m_boardSize * 3 / 4 )
-					if(_y - _outer < m_boardSize / 4 || _y - _outer >= m_boardSize * 3 / 4 )
+				if(_x - m_outer >= m_boardSize / 4 && _x - m_outer < m_boardSize * 3 / 4 )
+					if(_y - m_outer < m_boardSize / 4 || _y - m_outer >= m_boardSize * 3 / 4 )
 						m_displayBoard[_y][_x] = _counter + "";
-				if(_y - _outer >= m_boardSize / 4 && _y - _outer < m_boardSize * 3 / 4 )
-					if(_x - _outer < m_boardSize / 4 || _x - _outer >= m_boardSize * 3 / 4 )
+				if(_y - m_outer >= m_boardSize / 4 && _y - m_outer < m_boardSize * 3 / 4 )
+					if(_x - m_outer < m_boardSize / 4 || _x - m_outer >= m_boardSize * 3 / 4 )
 						m_displayBoard[_y][_x] = _counter + "";
 			}
 			if(__down) _x += 1;
@@ -172,31 +180,31 @@ public class AllMagicSquaresMT {
 		} while (array2DContains(m_displayBoard, m_boardAssets[0]));
 	}
 	
+	// Bunch of game variables
 	private static String[][] m_gameBoard, m_displayBoard;
 	private static String[] m_boardAssets = new String[] {"?", "-", "|", "+", "."};
-	//private static String[] m_boardAssets = new String[] {"?", "?", "?", "?", "."};
 	private static int m_gameWidth, m_gameHeight, m_gameMargins, m_gameBorder, m_gameRows, m_gameColumns;
+	private static int m_outer;
 	// Generates a template game board that can be resized with border and margins
 	private static void GenerateGameBoard(int p_width, int p_height, int p_rows, int p_columns, int p_margins, int p_border) {
 		m_gameWidth = p_width; m_gameHeight = p_height; m_gameMargins = p_margins; m_gameBorder = p_border;
 		m_gameRows = p_rows; m_gameColumns = p_columns;
-		int _outerSide = m_gameBorder + m_gameMargins;
-		int _outerSides = (2 * m_gameBorder) + (2 * m_gameMargins);
+		m_outer = m_gameBorder + m_gameMargins;
 		int _rowSize = (m_gameHeight * m_gameRows);
 		int _columnSize = (m_gameWidth * m_gameColumns);
 		
 		//Sets size of game board
-		m_gameBoard = new String[(m_gameBorder * m_gameRows - m_gameBorder) + _rowSize + _outerSides][];
+		m_gameBoard = new String[(m_gameBorder * m_gameRows - m_gameBorder) + _rowSize + m_outer * 2][];
 		for (int i = 0; i < m_gameBoard.length; i++) {
-			m_gameBoard[i] = new String[(m_gameBorder * m_gameRows - m_gameBorder) + _rowSize + _outerSides];
+			m_gameBoard[i] = new String[(m_gameBorder * m_gameRows - m_gameBorder) + _rowSize + m_outer * 2];
 		}
 		
 		// Fills in margins
 		for (String[] strings : m_gameBoard) Arrays.fill(strings, m_boardAssets[4]);
 		
 		//Fills in content
-		for (int i = _outerSide; i < m_gameBoard.length - _outerSide; i++) {
-			for (int j = _outerSide; j < m_gameBoard[i].length - _outerSide; j++) {
+		for (int i = m_outer; i < m_gameBoard.length - m_outer; i++) {
+			for (int j = m_outer; j < m_gameBoard[i].length - m_outer; j++) {
 				m_gameBoard[i][j] = m_boardAssets[0];
 			}
 		}
@@ -205,18 +213,18 @@ public class AllMagicSquaresMT {
 			// Fills in the columns
 			if (i >= m_gameMargins && i < m_gameBoard.length - m_gameMargins) {
 				for (int j = 0; j < m_gameBoard[i].length; j++) {
-					if (j >= _outerSide && j < m_gameBoard[i].length - _outerSide) {
-						if ((i < _outerSide || i >= m_gameBoard.length - _outerSide)) m_gameBoard[i][j] = m_boardAssets[1];
+					if (j >= m_outer && j < m_gameBoard[i].length - m_outer) {
+						if ((i < m_outer || i >= m_gameBoard.length - m_outer)) m_gameBoard[i][j] = m_boardAssets[1];
 						if (p_border > 0 && (((i) % (m_gameHeight + 2)) / p_border) == 1) m_gameBoard[i][j] = m_boardAssets[1];
 					}
 				}
 			}
 			
 			// Fills in the rows
-			if (i >= _outerSide && i < m_gameBoard.length - _outerSide) {
+			if (i >= m_outer && i < m_gameBoard.length - m_outer) {
 				for (int j = 0; j < m_gameBoard[i].length; j++) {
 					if (j >= m_gameMargins && j < m_gameBoard[i].length - m_gameMargins) {
-						if ((j < _outerSide || j >= m_gameBoard[i].length - _outerSide)) m_gameBoard[i][j] = m_boardAssets[2];
+						if ((j < m_outer || j >= m_gameBoard[i].length - m_outer)) m_gameBoard[i][j] = m_boardAssets[2];
 						if (p_border > 0 && (((j) % (m_gameWidth + 2)) / p_border) == 1) m_gameBoard[i][j] = m_boardAssets[2];
 					}
 				}
@@ -224,31 +232,35 @@ public class AllMagicSquaresMT {
 			
 			// Fills in the corners
 			if (i >= m_gameMargins && i < m_gameBoard.length - m_gameMargins) {
-				if (i < _outerSide || i > (1 + m_gameBoard.length) - (2 + _outerSide))
+				if (i < m_outer || i > (1 + m_gameBoard.length) - (2 + m_outer))
 					for (int j = 0; j < m_gameBoard[i].length; j++)
 						if (j >= m_gameMargins && j < m_gameBoard[i].length - m_gameMargins)
-							if (j < _outerSide || j > (1 + m_gameBoard[i].length) - (2 + _outerSide)) m_gameBoard[i][j] = m_boardAssets[3];
+							if (j < m_outer || j > (1 + m_gameBoard[i].length) - (2 + m_outer)) m_gameBoard[i][j] = m_boardAssets[3];
 			}
 		}
 	}
 	
+	// Bunch of user input variables
 	private static String m_userInput = "";
 	private static final Scanner m_scanner = new Scanner(System.in);
-	private static String getUserString() {
-		m_userInput = m_scanner.nextLine();
+	private static final BufferedReader _bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+	// Gets the user's input as a string
+	private static String getUserString() throws IOException {
+		m_userInput = _bufferedReader.readLine();
 		return m_userInput;
 	}
-	private static float getUserNum() {
+	private static float getUserNum() throws IOException {
+		// Gets the user's input as a number
 		m_userInput = getUserString();
 		if(isNumber(m_userInput)) return Integer.parseInt(m_userInput);
 		return -1;
 	}
-	private static void getUserChar() {
+	// Gets the user's input as a char
+	private static void getUserChar() throws IOException {
 		String _str = getUserString();
 		if(_str == null || Objects.equals(_str, "")) m_userInput = "?";
 		else m_userInput = _str.toUpperCase();
 	}
-	
 	//Checks if string is a number
 	//Code by Baeldung at: https://www.baeldung.com/java-check-string-number#:~:text=The%20NumberUtils.,parseInt(String)%2C%20Long.
 	private static boolean isNumber(String strNum) {
