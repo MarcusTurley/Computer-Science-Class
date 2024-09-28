@@ -1,7 +1,7 @@
 /****	Sources
  * Marcus Turley
  * COSC-2436
- * Program Set #2
+ * Program Set #3
  * References
  * Myself:
  * External:
@@ -53,16 +53,6 @@ public class RatEscapeMT {
 					_gameBoard.RenderBoard();
 					
 					_gameBoard.UpdateDisplayBoard(_gameBoard.GetGameBoard());
-					/*
-					mouse.Move(Right);
-					_gameBoard.RenderBoard();
-					mouse.Move(Back);
-					_gameBoard.RenderBoard();
-					mouse.Move(Back);
-					_gameBoard.RenderBoard();
-					mouse.Move(Back);
-					_gameBoard.RenderBoard();
-					*/
 					System.out.println("Solved Board: ");
 					// Path finds the fastest route to end by brute force
 					Algorithm.m_gameBoard = _gameBoard;
@@ -85,9 +75,9 @@ public class RatEscapeMT {
 		for (int i = 0; i < 3; i++) System.out.println();
 	}
 	
+	// Sets up game board data by getting it from a given file
 	private static int m_layers, m_rows, m_columns;
 	private static String[] m_board;
-	
 	private static void GetBoardData() {
 		String _line = FileData.Data().get(FileData.m_fileIndex);
 		
@@ -103,6 +93,7 @@ public class RatEscapeMT {
 		}
 	}
 	
+	// Solves the problem with a given algorithm
 	private static class Algorithm {
 		public static void PathFind(Entity p_from, Entity p_to) {
 			p_forks = new ArrayList<>();
@@ -114,28 +105,21 @@ public class RatEscapeMT {
 		private static Entity m_from, m_to;
 		private static List<int[]> p_forks;
 		private static final Entity m_path = new Entity("Path", "P", 0, 0);
-		
+		// Searches for many paths to get fastest
 		public static void SearchPath(Macro p_macro) throws InterruptedException {
 			m_path.SetPos(m_from.X(), m_from.Y());
 			
 			do {
 				List<int[]> _previousPositions = new ArrayList<>();
-				//System.out.println(m_to.Move()[0] + " " + m_to.Move()[1]);
 				int _duplicateCount = 0;
 				
 				while (!Arrays.equals(m_path.Pos(), m_to.Pos()) && _duplicateCount < 2) {
-					
-					//for (int[] _arr : _previousPositions)
-					//	System.out.println(ArrayUtilities.ArrayToString(Arrays.stream(_arr).boxed().toArray(), 1));
-					//System.out.println(_previousPositions.forEach(x -> ArrayUtilities.ArrayItemCount(Arrays.stream(x).boxed().toArray(), _path.X())));
 					_duplicateCount = 0;
 					for (int[] _arr : _previousPositions)
 						if (Arrays.equals(_arr, m_path.Pos())) _duplicateCount++;
-					//System.out.println(_duplicateCount);
 					
 					if (m_path.AdjacentMoves().size() >= 2) p_forks.add(new int[]{ m_path.X(), m_path.Y(), 1 });
 					
-					//System.out.println(_previousPositions.contains(m_path.Pos()));
 					System.out.println();
 					System.out.println();
 					Entity.MoveDirection _move = Forward;
@@ -149,12 +133,10 @@ public class RatEscapeMT {
 						m_path.Move(_move);
 					} while (_previousPositions.contains(m_path.Pos()));
 					if (m_path.MoveDirection() != null) p_macro.AddInput(m_path.MoveDirection().toInt());
-					//System.out.println(m_path.X());
 					m_gameBoard.RenderBoard();
 					Thread.sleep(100);
 					_previousPositions.add(m_path.Pos());
 				}
-				//System.out.println(ArrayUtilities.ArrayItemCount(_previousPositions.toArray(), m_path.Pos()));
 				
 				if (!p_forks.isEmpty()) {
 					p_forks.get(0)[2] += 1;
@@ -165,6 +147,7 @@ public class RatEscapeMT {
 		}
 	}
 	
+	// A class that play back input to replay the best attempts
 	private static class Macro {
 		private static final ScoreBoard m_scoreBoard = new ScoreBoard();
 		
@@ -265,6 +248,7 @@ public class RatEscapeMT {
 		}
 	}
 	
+	// A class that keeps track of the scores the mouse achieved
 	private static class ScoreBoard {
 		public ScoreBoard() { }
 		
@@ -540,12 +524,10 @@ public class RatEscapeMT {
 		
 		public static GameBoard ActiveBoard() { return ActiveBoard; }
 		
-		;
 		private static List<GameBoard> GameBoards = new ArrayList<>();
 		
 		public static List<GameBoard> GameBoards() { return GameBoards; }
 		
-		;
 		// PlayBoard contains all moving assets that go on top of the GameBoard
 		// GameBoard contains all the assets that are within the DisplayBoard's borders
 		// DisplayBoard contains the parsed PlayBoard, GameBoard, and extra visual content (eg. margins, borders)

@@ -1,3 +1,13 @@
+/****	Sources
+ * Marcus Turley
+ * COSC-2436
+ * Program Set #3
+ * References
+ * Myself:
+ * External:
+ * isNumber by Baeldung at: https://www.baeldung.com/java-check-string-number#:~:text=The%20NumberUtils.,parseInt(String)%2C%20Long.
+ ****/
+
 package Set_3;
 
 import java.io.BufferedReader;
@@ -50,6 +60,7 @@ public class WordGameMT {
 	private static String[] _board;
 	private static boolean _useIndexLength;
 	
+	// Plays the game
 	private static void Play(Game.Board p_gameBoard) {
 		for (int ___case = 1; ___case <= FileData.TestCases(); ___case++) {
 			System.out.println("Generated Board: ");
@@ -92,6 +103,7 @@ public class WordGameMT {
 		for (int i = 0; i < p_size; i++) System.out.println("________________________________________________________________________________");
 	}
 	
+	// Solves the problem with a given algorithm
 	private static class Algorithm {
 		private static List<String> m_wordsAns;
 		private static List<String> WordsAns() { return m_wordsAns; }
@@ -100,6 +112,7 @@ public class WordGameMT {
 		public static void SetLetters(String[] p_words) { m_lettersAns = new ArrayList<>(); m_lettersAns.addAll(Arrays.asList(p_words)); }
 		private static final String[] m_stringLetters = { "qu" };
 		
+		// Generates the puzzle board
 		public static void CreatePuzzle(int p_size) {
 			p_size = Math.min(p_size, (int)Math.sqrt(WordDictionary.WordCount()));
 			int _area = (int)Math.pow(p_size, 2);
@@ -127,6 +140,8 @@ public class WordGameMT {
 			Collections.shuffle(m_lettersAns);
 		}
 		
+		// Checks if a word is able to be added to the answers
+		// This checks how common all the letters in a given word are  to determine if it can be added
 		private static void CheckIfAddable(int p_index, int p_max) {
 		String _word = WordDictionary.CaptialWords()[p_index];
 			List<String> _tmpLetters = new ArrayList<>();
@@ -144,6 +159,7 @@ public class WordGameMT {
 			}
 		}
 		
+		// Finds string letters (eg. Q -> QU)
 		private static String FindStringLetter(String p_word, char p_letter) {
 			for (int _i = 0; _i < p_word.length(); _i++) {
 				if(p_word.charAt(_i) == p_letter) {
@@ -157,6 +173,7 @@ public class WordGameMT {
 			return p_letter + "";
 		}
 		
+		// Adds new letters to based on what is already known
 		private static void AddNewLetters(int p_index) {
 			String _word = m_wordsAns.get(p_index);
 			
@@ -219,6 +236,8 @@ public class WordGameMT {
 		
 	}
 	
+	// This class can move an index in a given direction
+	// Can also return specified adjacent tiles
 	private static class Moveable {
 		public Moveable(int p_x, int p_y) {
 			m_gameBoard = Game.Board.ActiveBoard();
@@ -250,6 +269,7 @@ public class WordGameMT {
 		private Game.Board m_gameBoard;
 		public Game.Board GameBoard() { return m_gameBoard; }
 		
+		// Moves the index
 		public void Move(int p_dir) { Move(Game.Direction.toEnum(p_dir), 1); }
 		public void Move(Game.Direction p_dir) { Move(p_dir, 1); }
 		public void Move(Game.Direction p_dir, int p_distance) {
@@ -267,6 +287,7 @@ public class WordGameMT {
 			}
 		}
 		
+		// Checks if the move contains a string
 		public boolean MoveContains(int[] p_move, String p_str) {
 			if (p_move[1] + m_y > 0 && m_gameBoard.GetGameBoard().length > p_move[1] + m_y)
 				if (p_move[0] + m_x > 0 && m_gameBoard.GetGameBoard()[p_move[1] + m_y].length > p_move[0] + m_x)
@@ -274,6 +295,7 @@ public class WordGameMT {
 			return false;
 		}
 		
+		// Checks gets the move placement
 		private int[] GetMove(Game.Direction p_dir, int m_dist) {
 			int[] _move = { 0, 0 };
 			switch (p_dir) {
@@ -301,6 +323,7 @@ public class WordGameMT {
 		}
 		
 		private List<Game.Direction> _adjacents;
+		// Finds any adjacent strings and returns their direction relative to the index
 		public List<Game.Direction> Adjacents() { return _adjacents; }
 		public List<Game.Direction> AdjacentMoves(String[] p_checks) { return AdjacentMoves(p_checks, new Game.Direction[] { }); }
 		public List<Game.Direction> AdjacentMoves(String[] p_checks, Game.Direction[] p_ignores) {
@@ -322,6 +345,7 @@ public class WordGameMT {
 		}
 	}
 	
+	// Contains all the words that can be added to the board
 	private static class WordDictionary {
 		private static List<String> m_words = new ArrayList<>();
 		public static String[] Words () { return m_words.stream().distinct().toArray(String[]::new); }
