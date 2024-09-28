@@ -108,29 +108,6 @@ public class RatEscapeMT {
 			p_forks = new ArrayList<>();
 			m_from = p_from;
 			m_to = p_to;
-			
-			//System.out.println("I: " + ArrayUtilities.ArrayToString(Arrays.stream(p_from.Pos()).boxed().toArray(), 1));
-			//System.out.println(ArrayUtilities.ArrayToString(Arrays.stream(p_to.Pos()).boxed().toArray(), 1));
-			Macro.Record(0);
-			
-			Macro.Record(0);
-			//Macro.Record(2);
-			//Macro.Record(1);
-			//System.out.println(ArrayUtilities.ArrayToString(Macro.ScoreBoard().MoveCounts().toArray(), 1));
-			//System.out.println(Macro.ScoreBoard().MinMoves());
-			//System.out.println(Macro.ScoreBoard().MinTime());
-			//Macro.Clear(0);
-				/*
-				mouse.Move(Right);
-				mouse.Move(Down);
-				mouse.Move(Right);
-				mouse.Move(Right);
-				mouse.Move(Right);
-				mouse.Move(Right);
-				mouse.Move(Up);
-				mouse.Move(Right);
-				mouse.Move(Down);
-				*/
 		}
 		
 		public static GameBoard m_gameBoard;
