@@ -7,8 +7,7 @@
  * External:
  * isNumber by Baeldung at: https://www.baeldung.com/java-check-string-number#:~:text=The%20NumberUtils.,parseInt(String)%2C%20Long.
  ****/
-
-package Set_3;
+package Set_4;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -17,10 +16,9 @@ import java.io.InputStreamReader;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static Set_3.RatEscapeMT.Entity.MoveDirection.rUp;
-import static Set_3.WordGameMT.Game.Data.*;
+import static Set_4.ConvertInfixMT.Game.Data.*;
 
-public class WordGameMT {
+public class ConvertInfixMT {
 	public static void main(String[] args) {
 		// Checks if user wants to execute program again
 		do {
@@ -28,28 +26,25 @@ public class WordGameMT {
 			ProblemOne();
 			do {
 				System.out.print("Run Again (Y / N) : ");
-				User.UserChar();
-			} while (User.UserInput().charAt(0) != 'Y' && User.UserInput().charAt(0) != 'N');
-		} while (User.UserInput().charAt(0) != 'N');
+				ConvertInfixMT.User.UserChar();
+			} while (ConvertInfixMT.User.UserInput().charAt(0) != 'Y' && ConvertInfixMT.User.UserInput().charAt(0) != 'N');
+		} while (ConvertInfixMT.User.UserInput().charAt(0) != 'N');
 	}
 	
 	// Solves the problem
 	private static void ProblemOne() {
 		// Inits the game states and gets the GameMode the user wants to play in
-		if(GameMode() == GameMode.None)
-			GetGameMode();
+		SetGameMode(GameMode.None);
 		
-		// Gets file data and ensures it exists
-		// Sets up the dictionary and GameBoard
-		WordDictionary.GetUserDictionaryData();
-		Game.Board _gameBoard = new Game.Board();
-		_gameBoard.InitializeBoards(_board, _useIndexLength);
+		// Sets up the GameBoard
+		ConvertInfixMT.Game.Board _gameBoard = new ConvertInfixMT.Game.Board();
+		//_gameBoard.InitializeBoards(_board, _useIndexLength);
 		
 		// Runs the algorithm the user input and answer
 		//Algorithm.PutWordsOnBoard(_gameBoard);
 		Play(_gameBoard);
 		
-		Game.Data.DisplayResults();
+		ConvertInfixMT.Game.Data.DisplayResults();
 		SetGameState(GameState.End);
 		SetGameResult(GameResult.None);
 	}
@@ -60,351 +55,105 @@ public class WordGameMT {
 	private static boolean _useIndexLength;
 	
 	// Plays the game
-	private static void Play(Game.Board p_gameBoard) {
-		for (int ___case = 1; ___case <= FileData.TestCases(); ___case++) {
-			System.out.println("Generated Board: ");
+	private static void Play(ConvertInfixMT.Game.Board p_gameBoard) {
+		for (int ___case = 1; ___case <= ConvertInfixMT.FileData.TestCases(); ___case++) {
+			System.out.print("Enter expression: ");
+			System.out.print("To Infix: ");
+			String _line;
+			String[] _lineArr;
+			//do {
+			//	_line = User.UserString();
+			//} while (!Algorithm.IsInfix(_line));
 			
-			while (GameState() != GameState.End) {
-				SpaceScreen(2);
-				p_gameBoard.RenderBoard();
-				SpaceScreen();
-				System.out.println("Enter words or ** to quit: ");
-				String _userInput = User.UserString();
-				String[] _inputs = _userInput.split(" ");
-				
-				int _correctGuesses = 0;
-				for(String _input : _inputs) {
-					if (Arrays.stream(WordDictionary.CaptialWords()).anyMatch(_input.toUpperCase()::equalsIgnoreCase)) {
-						_correctGuesses++;
-					}
-				}
-				
-				System.out.println();
-				System.out.println("# of correct Guesses: " + _correctGuesses);
-				System.out.println("# of incorrect guesses: " + (Algorithm.WordsAns().size() - _correctGuesses));
-				System.out.println("# of words computer found: " + Algorithm.WordsAns().size());
-				
-				boolean _lose = _userInput.contains("**");
-				boolean _won = _correctGuesses >= Algorithm.WordsAns().size();
-				if (_lose || _won) {
-					SetGameState(GameState.End);
-					if(_lose) SetGameResult(GameResult.Lost);
-					if(_won) SetGameResult(GameResult.Won);
-				}
-			}
+			//_line = "A B + C / D – E -";
+			//_lineArr = _line.split(" ");
+			//System.out.println(Utils.ArrayU.ArrayToString(_lineArr));
+			//Algorithm.ConvertToInfix(_line);
+			
+			_line = "* + 15 / + Z 7 9 / X 2";
+			_lineArr = _line.split(" ");
+			System.out.println(Utils.ArrayU.ArrayToString(_lineArr));
+			Algorithm.ConvertToInfix(_line);
+			
+			//System.out.println();
+			//_line = "* + 15 / + 7 9 / X 2";
+			//_lineArr = _line.split(" ");
+			//System.out.println(Utils.ArrayU.ArrayToString(_lineArr));
+			//Algorithm.ConvertToInfix(_line);
+			
+			//SpaceScreen(2);
+			//p_gameBoard.RenderBoard();
+			//SpaceScreen();
 			SpaceScreen();
 		}
-	}
-	
-	// Spaces the console a bit (replaces system('cls'))
-	private static void SpaceScreen() { SpaceScreen(1); }
-	private static void SpaceScreen(int p_size) {
-		for (int i = 0; i < p_size; i++) System.out.println("________________________________________________________________________________");
 	}
 	
 	// Solves the problem with a given algorithm
 	private static class Algorithm {
-		private static List<String> m_wordsAns;
-		private static List<String> WordsAns() { return m_wordsAns; }
-		private static List<String> m_lettersAns;
-		private static List<String> LettersAnd() { return m_lettersAns; }
-		public static void SetLetters(String[] p_words) { m_lettersAns = new ArrayList<>(); m_lettersAns.addAll(Arrays.asList(p_words)); }
-		private static final String[] m_stringLetters = { "qu" };
+		private static TreeMap<Integer, String[]> m_opperators = new TreeMap<>() {{
+			put(5, new String[] { "^" }); put(4, new String[] { "*", "/" }); put(2, new String[] { "+", "-" });
+		}};
 		
-		// Generates the puzzle board
-		public static void CreatePuzzle(int p_size) {
-			p_size = Math.min(p_size, (int)Math.sqrt(WordDictionary.WordCount()));
-			int _area = (int)Math.pow(p_size, 2);
-			m_wordsAns = new ArrayList<>();
-			m_lettersAns = new ArrayList<>();
-			List<Integer> _indexes = new ArrayList<>();
-			
-			for(int _i = 0; _i < Math.min(Math.pow(p_size, 3), WordDictionary.WordCount()); _i++) {
-				int _value = (int)(Math.random() * WordDictionary.WordCount());
-				if(!_indexes.contains(_value)) _indexes.add(_value);
-			}
-			Collections.shuffle(_indexes);
-			
-			int _areaLeft = _area - m_lettersAns.size();
-			int _lastArea = _areaLeft;
-			while (m_lettersAns.size() <= _area && !_indexes.isEmpty() && _areaLeft > 0) {
-				if(p_size > 5 && _areaLeft < _lastArea) {
-					System.out.println("Words found: " + _areaLeft);
-					_lastArea = _areaLeft;
-				}
-				CheckIfAddable(_indexes.get(0), _areaLeft);
-				_areaLeft = _area - m_lettersAns.size();
-				_indexes.remove(0);
-			}
-			Collections.shuffle(m_lettersAns);
-		}
-		
-		// Checks if a word is able to be added to the answers
-		// This checks how common all the letters in a given word are  to determine if it can be added
-		private static void CheckIfAddable(int p_index, int p_max) {
-		String _word = WordDictionary.CaptialWords()[p_index];
-			List<String> _tmpLetters = new ArrayList<>();
-			if (!m_wordsAns.contains(_word)) {
-				for (int _i = 0; _i < _word.length(); _i++) {
-					String _letter = FindStringLetter(_word.substring(_i), _word.charAt(_i)).toUpperCase();
-					if (Collections.frequency(m_lettersAns, _letter) < Collections.frequency(List.of(_word.split("")), _letter)) {
-						_tmpLetters.add(_letter.toUpperCase());
-					}
-				}
-				if (_tmpLetters.size() <= p_max) {
-					m_wordsAns.add(_word.toUpperCase());
-					_tmpLetters.forEach(_letter -> m_lettersAns.add(_letter.toUpperCase()));
+		public static void ConvertToInfix(String p_string) {
+			if(IsInfix(p_string)) {
+				if(IsPrefix(p_string)) {
+					System.out.println("Prefix: " + PrefixSolution(p_string));
+					// For parentheses check if there are two number next to each other
+				} else {
+					System.out.println("PostFix");
 				}
 			}
 		}
 		
-		// Finds string letters (eg. Q -> QU)
-		private static String FindStringLetter(String p_word, char p_letter) {
-			for (int _i = 0; _i < p_word.length(); _i++) {
-				if(p_word.charAt(_i) == p_letter) {
-					for (String _stringLetter : m_stringLetters) {
-						if (Objects.equals(p_word.substring(_i, Math.min(_i + _stringLetter.length(), p_word.length())).toUpperCase(), _stringLetter.toUpperCase())) {
-							return _stringLetter;
+		public static String PrefixSolution(String p_string) {
+			String _result= "";
+			p_string = p_string.replace(" ", "");
+			List<String> _equations;
+			for (int i = p_string.length() - 1; i >= 0; i--) {
+				for (String[] _opperators : m_opperators.values()) {
+					for (String __opperator : _opperators) {
+						if (Objects.equals(p_string.charAt(i) + "", __opperator)) {
+							String _opp = p_string.charAt(i) + "";
+							String _right = p_string.charAt(i + 1) + " ";
+							String _right2 = " " + p_string.charAt(i + 2);
+							//_equations.add();
+							System.out.println(_right + _opp + _right2);
+							_result += _right + _opp + _right2 + " " + _result;
 						}
 					}
 				}
 			}
-			return p_letter + "";
+			return _result.toString();
 		}
 		
-		// Adds new letters to based on what is already known
-		private static void AddNewLetters(int p_index) {
-			String _word = m_wordsAns.get(p_index);
-			
-			for (int _i = 0; _i < m_wordsAns.get(p_index).length(); _i++) {
-				String _letter = FindStringLetter(_word.substring(_i), _word.charAt(_i));
-				
-				
-				int _wordLetterCount = Collections.frequency(Collections.singletonList(_word), _letter);
-				int _lettersLetterCount = Collections.frequency(Collections.singletonList(_word), _letter);
-				if (_wordLetterCount > _lettersLetterCount) m_lettersAns.add(_letter);
-				_i += _letter.length() - 1;
-			}
-		}
-		
-		private static void PutWordsOnBoard(Game.Board p_gameBoard) {
-			switch (Game.Data.GameMode()) {
-				case Game: break;
-				case Demo: Algorithm.LettersAnd().forEach(_letter -> {
-					if(IsWordOnBoard(p_gameBoard, _letter))
-						m_wordsAns.add(_letter);
-				}); break;
-			}
-			System.out.println(Utils.ArrayU.ArrayToString(m_wordsAns.toArray(String[]::new)));
-		}
-		
-		private static List<List<Game.Direction>> _previousDirections;
-		private static boolean IsWordOnBoard(Game.Board p_gameBoard, String p_letter) {
-				int[] _index = Utils.ArrayU.Array2DFind(p_gameBoard.GetGameBoard(), p_letter);
-				Moveable _moveable = new Moveable(_index[0], _index[1]);
-				
-				String _partialWord = p_letter;
-				Utils.StringU.WordsWithSubString = WordDictionary.CaptialWords();
-				List<Game.Direction> _moveDirections = _moveable.AdjacentMoves(m_lettersAns.toArray(String[]::new));
-				while (!_moveable.Adjacents().isEmpty()) {
-					
-					_moveDirections = _moveable.AdjacentMoves(
-									m_lettersAns.toArray(String[]::new),
-									_previousDirections.get(_partialWord.length() - 1).toArray(Game.Direction[]::new)
-					);
-					Game.Direction _moveDirection = _moveDirections.get(0);
-					
-					_moveable.Move(_moveDirection);
-					_previousDirections.get(_partialWord.length() - 1).add(_moveDirection);
-					_partialWord += p_gameBoard.GetGameBoard()[_moveable.Y()][_moveable.X()];
-					
-					if(_previousDirections.size() < _partialWord.length() - 1)_previousDirections.add(new ArrayList<>());
-					for (Game.Direction _dir : _moveable.Adjacents()) {
-						_previousDirections.get(_partialWord.length() - 1).add(_dir);
-					}
-					
-					System.out.println(Utils.ArrayU.ArrayToString(Arrays.stream(_moveable.Pos()).boxed().toArray(), 2));
-					for (Game.Direction _dir : _moveDirections)
-						System.out.print(_dir.name());
-					System.out.println();
-					
-					Utils.StringU.FindWordsWithSubstring(Utils.StringU.WordsWithSubString, _partialWord);
+		public static boolean IsInfix(String p_string) {
+			boolean _containsOpperator = false;
+			for (String[] _opperators : m_opperators.values()) {
+				for (String __opperator : _opperators) {
+					_containsOpperator |= p_string.contains(__opperator);
 				}
-				return false;
-		}
-		
-	}
-	
-	// This class can move an index in a given direction
-	// Can also return specified adjacent tiles
-	private static class Moveable {
-		public Moveable(int p_x, int p_y) {
-			m_gameBoard = Game.Board.ActiveBoard();
-			SetPos(p_x, p_y);
-		}
-		
-		private int m_x, m_y;
-		public int X() { return m_x; }
-		public int Y() { return m_y; }
-		public int[] Pos() { return new int[]{ m_x, m_y }; }
-		
-		public void SetX(int p_x) { m_x = p_x; }
-		public void SetY(int p_y) { m_y = p_y; }
-		public void SetPos(int p_x, int p_y) { SetX(p_x); SetY(p_y); }
-		
-		public void ChangeX(int p_x) { SetX(m_x + p_x); }
-		public void ChangeY(int p_y) { SetY(m_y + p_y); }
-		public void ChangePos(int p_x, int p_y) { ChangeX(p_x); ChangeY(p_y); }
-		
-		private int m_moveDistance;
-		public int MoveDistance() { return m_moveDistance; }
-		
-		private Game.Direction m_moveDirection;
-		public Game.Direction MoveDirection() { return m_moveDirection; }
-		private int[] m_move = { 0, 0 }, m_roomMove = { 0, 0 }, m_rawRoomMove = { 0, 0 };
-		public int[] Move() { return m_move; }
-		public int[] MoveRoom() { return m_roomMove; }
-		
-		private Game.Board m_gameBoard;
-		public Game.Board GameBoard() { return m_gameBoard; }
-		
-		// Moves the index
-		public void Move(int p_dir) { Move(Game.Direction.toEnum(p_dir), 1); }
-		public void Move(Game.Direction p_dir) { Move(p_dir, 1); }
-		public void Move(Game.Direction p_dir, int p_distance) {
-			if (p_dir.toInt() < rUp.toInt()) {
-				m_move = GetMove(p_dir, p_distance);
-				m_moveDirection = p_dir;
-				m_moveDistance = p_distance;
-				ChangePos(m_move[0], m_move[1]);
 			}
-			else {
-				m_rawRoomMove = GetMove(p_dir, p_distance);
-				m_moveDirection = p_dir;
-				m_moveDistance = p_distance;
-				ChangePos(m_rawRoomMove[0], m_rawRoomMove[1]);
-			}
+			return _containsOpperator;
 		}
 		
-		// Checks if the move contains a string
-		public boolean MoveContains(int[] p_move, String p_str) {
-			if (p_move[1] + m_y > 0 && m_gameBoard.GetGameBoard().length > p_move[1] + m_y)
-				if (p_move[0] + m_x > 0 && m_gameBoard.GetGameBoard()[p_move[1] + m_y].length > p_move[0] + m_x)
-					return m_gameBoard.GetGameBoard()[p_move[1] + m_y][p_move[0] + m_x].equals(p_str);
-			return false;
-		}
-		
-		// Checks gets the move placement
-		private int[] GetMove(Game.Direction p_dir, int m_dist) {
-			int[] _move = { 0, 0 };
-			switch (p_dir) {
-				case Forward: _move[1] = -m_dist; break;
-				case Back: _move[1] = m_dist; break;
-				case Right: _move[0] = m_dist; break;
-				case Left: _move[0] = -m_dist; break;
-				case rUp: _move[1] = GetRoomMove(p_dir, m_dist); break;
-				case rDown: _move[1] = -GetRoomMove(p_dir, m_dist); break;
-				case rRight: _move[0] = GetRoomMove(p_dir, m_dist); break;
-				case rLeft: _move[0] = -GetRoomMove(p_dir, m_dist); break;
+		public static boolean IsPrefix(String p_string) {
+			boolean _isAtStart = false;
+			for (String[] _opperators : m_opperators.values()) {
+				for (String __opperator : _opperators) {
+					_isAtStart |= Objects.equals(p_string.charAt(0) + "", __opperator);
+				}
 			}
-			return _move;
-		}
-		private int GetRoomMove(Game.Direction p_dir, int m_dist) {
-			int _xMove = m_gameBoard.Width() / (m_gameBoard.Columns() + 1);
-			int _yMove = m_gameBoard.Height() / (m_gameBoard.Rows() + 1);
-			switch (p_dir) {
-				case rUp: m_dist += _yMove; break;
-				case rDown: m_dist += _yMove; break;
-				case rRight: m_dist += _xMove; break;
-				case rLeft: m_dist += _xMove; break;
-			}
-			return m_dist;
-		}
-		
-		private List<Game.Direction> _adjacents;
-		// Finds any adjacent strings and returns their direction relative to the index
-		public List<Game.Direction> Adjacents() { return _adjacents; }
-		public List<Game.Direction> AdjacentMoves(String[] p_checks) { return AdjacentMoves(p_checks, new Game.Direction[] { }); }
-		public List<Game.Direction> AdjacentMoves(String[] p_checks, Game.Direction[] p_ignores) {
-			_adjacents = new ArrayList<>();
-			for (int _i = 0; _i < Game.Direction.values().length; _i++) {
-				Game.Direction __dir = Game.Direction.toEnum(_i);
-				if (Arrays.asList(p_ignores).contains(__dir)) continue;
-				int[] _move = GetMove(__dir, 1);
-				if (Arrays.stream(p_checks).anyMatch(x -> MoveContains(_move, x))) _adjacents.add(__dir);
-			}
-			for (int i = 0; i < Math.min(4, _adjacents.size()); i++)
-				if (_adjacents.contains(Game.Direction.toEnum(i)) && _adjacents.contains(Game.Direction.toEnum(i + rUp.toInt())))
-					Utils.ArrayU.ArraySwap(_adjacents.toArray(),
-									_adjacents.indexOf(Game.Direction.toEnum(i)),
-									_adjacents.indexOf(Game.Direction.toEnum(i + rUp.toInt())));
-			for (Game.Direction _val : _adjacents)
-				System.out.println(_val.name());
-			return _adjacents;
+			return _isAtStart;
 		}
 	}
 	
-	// Contains all the words that can be added to the board
-	private static class WordDictionary {
-		private static List<String> m_words = new ArrayList<>();
-		public static String[] Words () { return m_words.stream().distinct().toArray(String[]::new); }
-		public static String[] CaptialWords () {
-			m_words.replaceAll(String::toUpperCase); return Words();
-		}
-		private static int m_wordCount;
-		public static int WordCount () { return m_wordCount; }
-		
-		public static void Add(String p_word) { m_words.add(p_word); }
-		public static void Add(String[] p_words) { m_words.addAll(Arrays.asList(p_words)); }
-		public static void Clear() { m_words.clear(); }
-		
-		// Gets the dictionary the user wants to use
-		private static void GetUserDictionaryData() {
-			FileData.GetUserFileData();
-			
-			WordDictionary.Clear();
-			WordDictionary.Add(FileData.Data().toArray(String[]::new));
-			m_wordCount = m_words.size();
-			System.out.println("Reading file: " + FileData.FileName() + ".txt");
-			SpaceScreen();
-			
-			_board = new String[0];
-			_useIndexLength = false;
-			switch (GameMode()) {
-				case Game:
-					int ___boardSize = 4;
-					while (___boardSize < 3 || ___boardSize > 10) {
-						System.out.print("Enter the board size [3-10]: ");
-						___boardSize = (int)User.UserNum();
-						System.out.println();
-						
-						if(___boardSize < 1) {
-							System.out.println("The board size " + ___boardSize + " is too small");
-							System.out.println("It must be larger than 3");
-							SpaceScreen();
-						} else if (___boardSize > 10) {
-							System.out.println("The board size " + ___boardSize + " is too large");
-							System.out.println("It must be smaller than 10");
-							SpaceScreen();
-						}
-					}
-					System.out.println("Creating puzzle...\nPlease Wait.");
-					SpaceScreen();
-					Algorithm.CreatePuzzle(___boardSize);
-					_board = Algorithm.LettersAnd().toArray(String[]::new);
-					_useIndexLength = false;
-					break;
-				case Demo:
-					System.out.println("Enter game board: ");
-					String _tmp = "A B C D\n E F G H\n I J K L\n M N O P";
-					_board = _tmp.split("\n");
-					for (int _i = 0; _i < _board.length; _i++)
-						_board[_i] = _board[_i].replace(" ", "").toUpperCase();
-					_useIndexLength = true;
-					Algorithm.SetLetters(_board);
-					break;
-			}
-		}
+	// Spaces the console a bit (replaces system('cls'))
+	private static void SpaceScreen() { SpaceScreen(1, false); }
+	private static void SpaceScreen(int p_size) { SpaceScreen(p_size, false); }
+	private static void SpaceScreen(boolean p_newLine) { SpaceScreen(1, p_newLine); }
+	private static void SpaceScreen(int p_size, boolean p_newLine) {
+		if (p_newLine) System.out.println();
+		for (int i = 0; i < p_size; i++) System.out.println("________________________________________________________________________________");
 	}
 	
 	protected static class Game {
@@ -412,7 +161,7 @@ public class WordGameMT {
 		public enum Direction {
 			Forward, Right, Back, Left, rUp, rDown, rRight, rLeft;
 			
-			public static Direction toEnum(int p_val) {
+			public static ConvertInfixMT.Game.Direction toEnum(int p_val) {
 				//p_val = p_val % MoveDirection.values().length;
 				switch (p_val) {
 					case 0 -> { return Forward; }
@@ -427,7 +176,7 @@ public class WordGameMT {
 				return Forward;
 			}
 			
-			public Direction opposite() {
+			public ConvertInfixMT.Game.Direction opposite() {
 				switch (this) {
 					case Forward -> { return Back; }
 					case Back -> { return Forward; }
@@ -462,45 +211,45 @@ public class WordGameMT {
 			public enum GameMode { None, Game, Demo }
 			public enum GameResult { None, Won, Lost}
 			
-			private static GameState m_state = GameState.Initializing;
-			private static GameMode m_mode = GameMode.None;
-			private static GameResult m_result = GameResult.None;
+			private static ConvertInfixMT.Game.Data.GameState m_state = ConvertInfixMT.Game.Data.GameState.Initializing;
+			private static ConvertInfixMT.Game.Data.GameMode m_mode = ConvertInfixMT.Game.Data.GameMode.None;
+			private static ConvertInfixMT.Game.Data.GameResult m_result = ConvertInfixMT.Game.Data.GameResult.None;
 			
-			public static GameState GameState() { return m_state; }
-			public static GameMode GameMode() { return m_mode; }
-			public static GameResult GameResult() { return m_result; }
+			public static ConvertInfixMT.Game.Data.GameState GameState() { return m_state; }
+			public static ConvertInfixMT.Game.Data.GameMode GameMode() { return m_mode; }
+			public static ConvertInfixMT.Game.Data.GameResult GameResult() { return m_result; }
 			
-			public static void SetGameState(GameState p_state) { m_state = p_state; }
-			public static void SetGameMode(GameMode p_mode) { m_mode = p_mode; }
-			public static void SetGameResult(GameResult p_result) { m_result = p_result; }
+			public static void SetGameState(ConvertInfixMT.Game.Data.GameState p_state) { m_state = p_state; }
+			public static void SetGameMode(ConvertInfixMT.Game.Data.GameMode p_mode) { m_mode = p_mode; }
+			public static void SetGameResult(ConvertInfixMT.Game.Data.GameResult p_result) { m_result = p_result; }
 			
-			public static void Init() { Init(GameMode.None); }
-			public static void Init(GameMode p_mode) {
-				SetGameState(GameState.Initializing);
+			public static void Init() { Init(ConvertInfixMT.Game.Data.GameMode.None); }
+			public static void Init(ConvertInfixMT.Game.Data.GameMode p_mode) {
+				SetGameState(ConvertInfixMT.Game.Data.GameState.Initializing);
 				SetGameMode(p_mode);
 			}
 			
 			public static void GetGameMode() {
 				do {
 					System.out.println("Enter [D/d]-demo mode or [G/g]-game mode: ");
-					User.UserChar();
-					if (!User.IsLineEmpty()) {
-						switch (Character.toUpperCase(User.UserInput().charAt(0))) {
+					ConvertInfixMT.User.UserChar();
+					if (!ConvertInfixMT.User.IsLineEmpty()) {
+						switch (Character.toUpperCase(ConvertInfixMT.User.UserInput().charAt(0))) {
 							case 'G':
-								SetGameMode(GameMode.Game);
-								SetGameState(GameState.Playing);
+								SetGameMode(ConvertInfixMT.Game.Data.GameMode.Game);
+								SetGameState(ConvertInfixMT.Game.Data.GameState.Playing);
 								break;
 							case 'D':
-								SetGameMode(GameMode.Demo);
-								SetGameState(GameState.Playing);
+								SetGameMode(ConvertInfixMT.Game.Data.GameMode.Demo);
+								SetGameState(ConvertInfixMT.Game.Data.GameState.Playing);
 								break;
 						}
 					}
-				} while (GameMode() == GameMode.None);
+				} while (GameMode() == ConvertInfixMT.Game.Data.GameMode.None);
 			}
 			
 			private static void DisplayResults() {
-				switch (Data.m_result) {
+				switch (ConvertInfixMT.Game.Data.m_result) {
 					case Won -> System.out.println("You won!!!\nCongradulations!!!");
 					case Lost -> System.out.println("You lost...\nTry again!");
 				}
@@ -509,24 +258,24 @@ public class WordGameMT {
 		
 		// Class that can generate and render a game board as text
 		private static class Board {
-		// Bunch of game variables
-		public Board() {
-			GameBoards.add(this);
-			ActiveBoard = this;
-		}
-		
-		public void Delete() {
-			GameBoards.remove(this);
-		}
-		
-		private static Board ActiveBoard;
-		
-		public static Board ActiveBoard() { return ActiveBoard; }
-		
-		;
-		private static List<Board> GameBoards = new ArrayList<>();
-		
-		public static List<Board> GameBoards() { return GameBoards; }
+			// Bunch of game variables
+			public Board() {
+				GameBoards.add(this);
+				ActiveBoard = this;
+			}
+			
+			public void Delete() {
+				GameBoards.remove(this);
+			}
+			
+			private static ConvertInfixMT.Game.Board ActiveBoard;
+			
+			public static ConvertInfixMT.Game.Board ActiveBoard() { return ActiveBoard; }
+			
+			
+			private static List<ConvertInfixMT.Game.Board> GameBoards = new ArrayList<>();
+			
+			public static List<ConvertInfixMT.Game.Board> GameBoards() { return GameBoards; }
 			// PlayBoard contains all moving assets that go on top of the GameBoard
 			// GameBoard contains all the assets that are within the DisplayBoard's borders
 			// DisplayBoard contains the parsed PlayBoard, GameBoard, and extra visual content (eg. margins, borders)
@@ -543,12 +292,12 @@ public class WordGameMT {
 			public void PlayBoardSetArray(String[][] p_arr) { m_playBoard = p_arr; }
 			public void PlayBoardSetIndex(String p_str, int p_x, int p_y) { m_playBoard[p_y][p_x] = p_str; }
 			public void PlayBoardRemoveIndex(String p_str) {
-				int[] _index = Utils.ArrayU.Array2DFind(m_playBoard, p_str);
+				int[] _index = ConvertInfixMT.Utils.ArrayU.Array2DFind(m_playBoard, p_str);
 				if (_index[0] > -1 && _index[1] > -1) m_playBoard[_index[1]][_index[0]] = m_boardAssets[0];
 			}
 			public void PlayBoardSwapIndex(String p_str, int p_x, int p_y) {
-				int[] _index = Utils.ArrayU.Array2DFind(m_playBoard, p_str);
-				if (_index[0] > -1 && _index[1] > -1) Utils.ArrayU.Array2DSwap(m_playBoard, _index[0], _index[1], p_x, p_y);
+				int[] _index = ConvertInfixMT.Utils.ArrayU.Array2DFind(m_playBoard, p_str);
+				if (_index[0] > -1 && _index[1] > -1) ConvertInfixMT.Utils.ArrayU.Array2DSwap(m_playBoard, _index[0], _index[1], p_x, p_y);
 			}
 			
 			private final String[] m_boardAssets = new String[]{ "?", "-", "|", "+", "." };
@@ -627,95 +376,95 @@ public class WordGameMT {
 					UpdateDisplayBoard(m_playBoard, m_boardAssets[0]);
 				}
 				for (String[] _arr : m_displayBoard)
-					System.out.println(Utils.ArrayU.ArrayToString(_arr, Utils.ArrayU.LongestStringIn2DArray(m_displayBoard)));
+					System.out.println(ConvertInfixMT.Utils.ArrayU.ArrayToString(_arr, ConvertInfixMT.Utils.ArrayU.LongestStringIn2DArray(m_displayBoard)));
 			}
-		
+			
 			// Generates a template game board that can be resized with border and margins
 			// Columns and Rows are a bit wanky but work fine if there are one or less of either
 			public void InitializeBoards(String[] p_arr, boolean _useIndexLength) { InitializeBoards(p_arr, 2, 2, _useIndexLength); }
 			public void InitializeBoards(String[] p_arr, int p_margins, int p_border, boolean _useIndexLength) { InitializeBoards(p_arr, 2, 2, 0, 0, _useIndexLength); }
-		
+			
 			public void InitializeBoards(String[] p_arr) { InitializeBoards(p_arr, 2, 2); }
 			public void InitializeBoards(String[] p_arr, int p_margins, int p_border) { InitializeBoards(p_arr, 2, 2, 0, 0, false); }
-		
+			
 			public void InitializeBoards(String[] p_arr, int p_margins, int p_border, int p_rows, int p_columns, boolean _useIndexLength) {
-			m_gameRows = p_rows;
-			m_gameColumns = p_columns;
-			m_gameMargins = p_margins;
-			m_gameBorder = p_border;
-			
-			if (_useIndexLength) {
-				m_gameWidth = p_arr[0].length();
-				m_displayWidth = p_arr[0].length() + (m_gameColumns * m_gameBorder);
-				m_gameHeight = p_arr.length;
-				m_displayHeight = p_arr.length + (m_gameRows * m_gameBorder);
-			} else {
-				m_gameWidth = (int)Math.sqrt(p_arr.length);
-				m_displayWidth = (int)Math.sqrt(p_arr.length + (m_gameColumns * m_gameBorder));
-				m_gameHeight = (int)Math.sqrt(p_arr.length);
-				m_displayHeight = (int)Math.sqrt(p_arr.length + (m_gameRows * m_gameBorder));
-			}
-			
-			m_gameMin = m_gameBorder + m_gameMargins;
-			m_gameMaxX = m_gameMin + m_gameWidth;
-			m_gameMaxY = m_gameMin + m_gameHeight;
-			m_displayMaxX = m_gameMin + m_displayWidth;
-			m_displayMaxY = m_gameMin + m_displayHeight;
-			
-			//Sets size of game board
-			m_displayBoard = new String[m_gameMin * 2 + m_displayHeight][m_gameMin * 2 + m_displayWidth];
-			
-			// Fills in margins
-			for (String[] _str : m_displayBoard) Arrays.fill(_str, m_boardAssets[4]);
-			
-			//Fills in content
-			for (int _r = m_gameMin; _r < m_displayMaxY; _r++) {
-				for (int __c = m_gameMin; __c < m_displayMaxX; __c++) {
-					m_displayBoard[_r][__c] = m_boardAssets[0];
+				m_gameRows = p_rows;
+				m_gameColumns = p_columns;
+				m_gameMargins = p_margins;
+				m_gameBorder = p_border;
+				
+				if (_useIndexLength) {
+					m_gameWidth = p_arr[0].length();
+					m_displayWidth = p_arr[0].length() + (m_gameColumns * m_gameBorder);
+					m_gameHeight = p_arr.length;
+					m_displayHeight = p_arr.length + (m_gameRows * m_gameBorder);
+				} else {
+					m_gameWidth = (int)Math.sqrt(p_arr.length);
+					m_displayWidth = (int)Math.sqrt(p_arr.length + (m_gameColumns * m_gameBorder));
+					m_gameHeight = (int)Math.sqrt(p_arr.length);
+					m_displayHeight = (int)Math.sqrt(p_arr.length + (m_gameRows * m_gameBorder));
 				}
-			}
-			
-			for (int _r = m_gameMin; _r < m_displayMaxY; _r++) {
-				for (int __c = m_gameMin; __c < m_displayMaxX; __c++) {
-					
-					// Adds ceiling and floor
-					if (_r == m_gameMin || _r == m_displayMaxY - 1) {
-						for (int ___i = m_gameBorder; ___i > 0; ___i--) {
-							m_displayBoard[_r + ___i * (_r > m_gameMin ? 1 : -1)][__c] = m_boardAssets[1];
-						}
+				
+				m_gameMin = m_gameBorder + m_gameMargins;
+				m_gameMaxX = m_gameMin + m_gameWidth;
+				m_gameMaxY = m_gameMin + m_gameHeight;
+				m_displayMaxX = m_gameMin + m_displayWidth;
+				m_displayMaxY = m_gameMin + m_displayHeight;
+				
+				//Sets size of game board
+				m_displayBoard = new String[m_gameMin * 2 + m_displayHeight][m_gameMin * 2 + m_displayWidth];
+				
+				// Fills in margins
+				for (String[] _str : m_displayBoard) Arrays.fill(_str, m_boardAssets[4]);
+				
+				//Fills in content
+				for (int _r = m_gameMin; _r < m_displayMaxY; _r++) {
+					for (int __c = m_gameMin; __c < m_displayMaxX; __c++) {
+						m_displayBoard[_r][__c] = m_boardAssets[0];
 					}
-					
-					// Adds walls
-					if (__c == m_gameMin || __c == m_displayMaxX - 1) {
-						for (int ___i = m_gameBorder; ___i > 0; ___i--) {
-							m_displayBoard[_r][__c + ___i * (__c > m_gameMin ? 1 : -1)] = m_boardAssets[2];
-						}
-					}
-					
-					// Adds corners
-					if ((_r == m_gameMin || _r == m_displayMaxY - 1) || (__c == m_gameMin || __c == m_displayMaxX - 1)) {
-						for (int ___i = m_gameBorder; ___i > 0; ___i--) {
-							for (int ____j = m_gameBorder; ____j > 0; ____j--) {
-								m_displayBoard[_r + ___i * (_r > m_gameMin ? 1 : -1)][__c + ____j * (__c > m_gameMin ? 1 : -1)] = m_boardAssets[3];
+				}
+				
+				for (int _r = m_gameMin; _r < m_displayMaxY; _r++) {
+					for (int __c = m_gameMin; __c < m_displayMaxX; __c++) {
+						
+						// Adds ceiling and floor
+						if (_r == m_gameMin || _r == m_displayMaxY - 1) {
+							for (int ___i = m_gameBorder; ___i > 0; ___i--) {
+								m_displayBoard[_r + ___i * (_r > m_gameMin ? 1 : -1)][__c] = m_boardAssets[1];
 							}
 						}
-					}
-					
-					// Adds row dividers
-					if (m_gameRows > 0 && ((_r + 1 - m_gameMin + (p_arr.length / (m_gameRows + 1))) % (p_arr.length / m_gameRows + 1)) / m_gameBorder == 0) {
-						m_displayBoard[_r][__c] = m_boardAssets[1];
-					}
-					// Adds column dividers
-					if (m_gameColumns > 0 && ((__c + 1 - m_gameMin + (p_arr[0].length() / (m_gameColumns + 1))) % (p_arr[0].length() / m_gameColumns + 1)) / m_gameBorder == 0) {
-						m_displayBoard[_r][__c] = m_boardAssets[2];
+						
+						// Adds walls
+						if (__c == m_gameMin || __c == m_displayMaxX - 1) {
+							for (int ___i = m_gameBorder; ___i > 0; ___i--) {
+								m_displayBoard[_r][__c + ___i * (__c > m_gameMin ? 1 : -1)] = m_boardAssets[2];
+							}
+						}
+						
+						// Adds corners
+						if ((_r == m_gameMin || _r == m_displayMaxY - 1) || (__c == m_gameMin || __c == m_displayMaxX - 1)) {
+							for (int ___i = m_gameBorder; ___i > 0; ___i--) {
+								for (int ____j = m_gameBorder; ____j > 0; ____j--) {
+									m_displayBoard[_r + ___i * (_r > m_gameMin ? 1 : -1)][__c + ____j * (__c > m_gameMin ? 1 : -1)] = m_boardAssets[3];
+								}
+							}
+						}
+						
+						// Adds row dividers
+						if (m_gameRows > 0 && ((_r + 1 - m_gameMin + (p_arr.length / (m_gameRows + 1))) % (p_arr.length / m_gameRows + 1)) / m_gameBorder == 0) {
+							m_displayBoard[_r][__c] = m_boardAssets[1];
+						}
+						// Adds column dividers
+						if (m_gameColumns > 0 && ((__c + 1 - m_gameMin + (p_arr[0].length() / (m_gameColumns + 1))) % (p_arr[0].length() / m_gameColumns + 1)) / m_gameBorder == 0) {
+							m_displayBoard[_r][__c] = m_boardAssets[2];
+						}
 					}
 				}
+				
+				GenerateGameBoard(p_arr, _useIndexLength);
+				GeneratePlayBoard();
+				UpdateDisplayBoard(m_gameBoard);
 			}
-			
-			GenerateGameBoard(p_arr, _useIndexLength);
-			GeneratePlayBoard();
-			UpdateDisplayBoard(m_gameBoard);
-		}
 			
 			// Generates a template game board that can be resized with border and margins
 			@Deprecated
@@ -814,12 +563,12 @@ public class WordGameMT {
 					System.out.println("*Leave blank for default*");
 					System.out.print("Enter filename: ");
 					// Gets user file name
-					m_fileName = User.UserString();
+					m_fileName = ConvertInfixMT.User.UserString();
 					System.out.println();
 					
 					// Default name for efficiency
 					if (m_fileName.isEmpty()) //m_fileName = "bogglewords";
-					m_fileName = "WordGameDictionary";
+						m_fileName = "WordGameDictionary";
 					if (m_fileName.contains(".")) m_fileName = m_fileName.substring(0, m_fileName.indexOf("."));
 					
 					try {
@@ -830,7 +579,7 @@ public class WordGameMT {
 						}
 						m_beenRead = true;
 						_scanner.close();
-						if (Utils.StringU.isStringNumber(m_fileData.get(0))) {
+						if (ConvertInfixMT.Utils.StringU.isStringNumber(m_fileData.get(0))) {
 							m_testCaseCount = Integer.parseInt(m_fileData.get(0));
 							m_fileIndex = 1;
 						}
@@ -864,7 +613,7 @@ public class WordGameMT {
 			return _allUserStrings.toArray(String[]::new);
 		}
 		
-		public User WaitForValid(String [] p_ignores) {
+		public ConvertInfixMT.User WaitForValid(String [] p_ignores) {
 			return this;
 		}
 		
@@ -877,7 +626,7 @@ public class WordGameMT {
 		// Gets the user's input as a number
 		public static float UserNum() {
 			m_userInput = UserString();
-			if (Utils.StringU.isStringNumber(m_userInput)) return Integer.parseInt(m_userInput);
+			if (ConvertInfixMT.Utils.StringU.isStringNumber(m_userInput)) return Integer.parseInt(m_userInput);
 			return -1;
 		}
 		
@@ -972,7 +721,7 @@ public class WordGameMT {
 				if (p_arr == null || p_arr.length == 0) return "";
 				String _result = "";
 				for (t_Any __str : p_arr) _result += __str + " ";
-				return StringU.SpaceEvenly(_result.substring(0, _result.length() - 1), " ", p_spacing);
+				return ConvertInfixMT.Utils.StringU.SpaceEvenly(_result.substring(0, _result.length() - 1), " ", p_spacing);
 			}
 			
 			// Finds the longest String within a 2D array
@@ -998,7 +747,7 @@ public class WordGameMT {
 			public static String SpaceEvenly(String p_str, String p_split, int p_spacing) {
 				String _result = "";
 				List<String> _items = Arrays.stream(p_str.split(p_split)).toList();
-				if (p_spacing == 0) p_spacing = ArrayU.LongestStringInArray(_items.toArray(new String[0]));
+				if (p_spacing == 0) p_spacing = ConvertInfixMT.Utils.ArrayU.LongestStringInArray(_items.toArray(new String[0]));
 				for (int i = 0; i < _items.size(); i++) {
 					_result = _result.concat(_items.get(i));
 					if (i < _items.size() - 1) for (int j = p_spacing + 1; j > _items.get(i).length(); j--)
@@ -1057,12 +806,20 @@ public class WordGameMT {
 			}
 			
 			public static String[] WordsWithSubString;
+			// Finds all words in an array containing a given substring
+			// This functions like a searchbar with autofill
 			public static String[] FindWordsWithSubstring(String[] p_words, String p_substr) {
 				WordsWithSubString = Arrays.stream(p_words).filter(
-									_word -> Objects.equals(_word.substring(0, Math.min(p_substr.length(), _word.length())), p_substr)
-					).toArray(String[]::new);
+								_word -> Objects.equals(_word.substring(0, Math.min(p_substr.length(), _word.length())), p_substr)
+				).toArray(String[]::new);
 				return WordsWithSubString;
 			}
+			
+			private static class Arithmetic {
+				public static int Add() {
+					return 1;
+				}
+			}
 		}
-	}
+	}	
 }
