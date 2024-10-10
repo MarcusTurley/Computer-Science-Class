@@ -65,12 +65,17 @@ public class ConvertInfixMT {
 			//	_line = User.UserString();
 			//} while (!Algorithm.IsInfix(_line));
 			
-			//_line = "A B + C / D – E -";
+			//_line = "A B + C / D - E -";
 			//_lineArr = _line.split(" ");
 			//System.out.println(Utils.ArrayU.ArrayToString(_lineArr));
 			//Algorithm.ConvertToInfix(_line);
 			
 			_line = "* + 15 / + Z 7 9 / X 2";
+			_lineArr = _line.split(" ");
+			System.out.println(Utils.ArrayU.ArrayToString(_lineArr));
+			Algorithm.ConvertToInfix(_line);
+			
+			_line = "/ * - + A B C - + A B D * * - A B C - A D";
 			_lineArr = _line.split(" ");
 			System.out.println(Utils.ArrayU.ArrayToString(_lineArr));
 			Algorithm.ConvertToInfix(_line);
@@ -90,9 +95,12 @@ public class ConvertInfixMT {
 	
 	// Solves the problem with a given algorithm
 	private static class Algorithm {
+		/*
 		private static TreeMap<Integer, String[]> m_opperators = new TreeMap<>() {{
 			put(5, new String[] { "^" }); put(4, new String[] { "*", "/" }); put(2, new String[] { "+", "-" });
 		}};
+		*/
+		private static final String[] m_opperators = new String[] { "^", "*", "/", "+", "-" };
 		
 		public static void ConvertToInfix(String p_string) {
 			if(IsInfix(p_string)) {
@@ -100,51 +108,71 @@ public class ConvertInfixMT {
 					System.out.println("Prefix: " + PrefixSolution(p_string));
 					// For parentheses check if there are two number next to each other
 				} else {
-					System.out.println("PostFix");
+					System.out.println("PostFix" + PrefixSolution(p_string));
 				}
 			}
 		}
 		
 		public static String PrefixSolution(String p_string) {
 			String _result= "";
-			p_string = p_string.replace(" ", "");
-			List<String> _equations;
-			for (int i = p_string.length() - 1; i >= 0; i--) {
-				for (String[] _opperators : m_opperators.values()) {
-					for (String __opperator : _opperators) {
-						if (Objects.equals(p_string.charAt(i) + "", __opperator)) {
-							String _opp = p_string.charAt(i) + "";
-							String _right = p_string.charAt(i + 1) + " ";
-							String _right2 = " " + p_string.charAt(i + 2);
-							//_equations.add();
-							System.out.println(_right + _opp + _right2);
-							_result += _right + _opp + _right2 + " " + _result;
-						}
-					}
+			List<String> _parts = new ArrayList<>(Arrays.stream(p_string.split(" ")).toList());
+			List<String> _equations = new ArrayList<>();
+			
+			int shift = 0;
+			if(IsPrefix(p_string)) shift = _parts.size() - 1;
+			for (int i = _parts.size() - 1; i >= 0; i--) {
+				String __part = _parts.get(i);
+				//System.out.println(__part + "=" + m_opperators[4] + __part.contains(m_opperators[4]));
+				//System.out.println("Part: " + __part + " Check: " + Arrays.asList(m_opperators).contains((__part)));
+				if (Arrays.asList(m_opperators).contains((__part))) {
+					// Use ignores and includes to determine what is an operator and what is not
+					// This is used to get operands of the equation and put those on the ends of operators
+					// This can also be achieved with while loops and a counter, but this is easier for me to read/write (though it's probably significantly less performant)
+					List<String> _ignores = new ArrayList<>(Arrays.stream(m_opperators).toList());
+					List<String> _includes = _parts.subList(i + 1, _parts.size());
+					
+					// Finds the left operand
+					String ___left = _parts.stream()
+									.filter(x -> _includes.stream().anyMatch(x::equalsIgnoreCase))
+									.filter(x -> _ignores.stream().noneMatch(x::equalsIgnoreCase)).findFirst().orElse(null);
+					_ignores.add(___left);
+					
+					// Finds the right operand
+					String ___right = _parts.stream()
+									.filter(x -> _includes.stream().anyMatch(x::equalsIgnoreCase))
+									.filter(x -> _ignores.stream().noneMatch(x::equalsIgnoreCase)).findFirst().orElse(null);
+					_ignores.add(___right);
+					
+					//System.out.println("List: " + Utils.ArrayU.ArrayToString(_parts.toArray(String[]::new), 0) + " Length: " + _parts.size());
+					// Writes out that part of the equation
+					String ___equation = "(" + ___left + " " + __part + " " + ___right + ")";
+					
+					// Replaces the original equation with the new one
+					//System.out.println("Includes: " + Utils.ArrayU.ArrayToString(_includes.toArray(String[]::new), 1));
+					System.out.println("Includes: " + _includes.get(0));
+					System.out.println("Includes: " + _includes.get(1));
+					System.out.println("Parts: " + Utils.ArrayU.ArrayToString(_parts.toArray(String[]::new), 0));
+					_parts.set(i, ___equation);
+					_parts.remove(i + 1);
+					_parts.remove(i + 1);
+					
+					_equations.add(___equation);
+					System.out.println("Left: " + ___left);
+					System.out.println("Right: " + ___right);
+					System.out.println("Equation: " + ___equation);
+					System.out.println("I: " + i);
+					//System.out.println("Parts: " + Utils.ArrayU.ArrayToString(_parts.toArray(String[]::new), 0));
+					//System.out.println("Result: " + _result);
+					System.out.println();
+					_result = ___equation;
 				}
 			}
 			return _result.toString();
 		}
 		
-		public static boolean IsInfix(String p_string) {
-			boolean _containsOpperator = false;
-			for (String[] _opperators : m_opperators.values()) {
-				for (String __opperator : _opperators) {
-					_containsOpperator |= p_string.contains(__opperator);
-				}
-			}
-			return _containsOpperator;
-		}
+		public static boolean IsInfix(String p_string) { return Arrays.stream(m_opperators).anyMatch(p_string::contains); }
 		
-		public static boolean IsPrefix(String p_string) {
-			boolean _isAtStart = false;
-			for (String[] _opperators : m_opperators.values()) {
-				for (String __opperator : _opperators) {
-					_isAtStart |= Objects.equals(p_string.charAt(0) + "", __opperator);
-				}
-			}
-			return _isAtStart;
-		}
+		public static boolean IsPrefix(String p_string) { return Arrays.stream(m_opperators).anyMatch((p_string.charAt(0) + "")::equalsIgnoreCase); }
 	}
 	
 	// Spaces the console a bit (replaces system('cls'))
@@ -744,10 +772,11 @@ public class ConvertInfixMT {
 		private static class StringU {
 			// Spaces a String evenly
 			@SuppressWarnings("SameParameterValue")
+			public static String SpaceEvenly(String p_str, String p_split) { return SpaceEvenly(p_str, p_split, -1); }
 			public static String SpaceEvenly(String p_str, String p_split, int p_spacing) {
 				String _result = "";
 				List<String> _items = Arrays.stream(p_str.split(p_split)).toList();
-				if (p_spacing == 0) p_spacing = ConvertInfixMT.Utils.ArrayU.LongestStringInArray(_items.toArray(new String[0]));
+				if (p_spacing < 0) p_spacing = ConvertInfixMT.Utils.ArrayU.LongestStringInArray(_items.toArray(new String[0]));
 				for (int i = 0; i < _items.size(); i++) {
 					_result = _result.concat(_items.get(i));
 					if (i < _items.size() - 1) for (int j = p_spacing + 1; j > _items.get(i).length(); j--)
