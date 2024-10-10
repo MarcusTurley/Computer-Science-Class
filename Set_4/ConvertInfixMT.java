@@ -105,31 +105,46 @@ public class ConvertInfixMT {
 		public static void ConvertToInfix(String p_string) {
 			if(IsInfix(p_string)) {
 				if(IsPrefix(p_string)) {
-					System.out.println("Prefix: " + PrefixSolution(p_string));
+					System.out.println("Prefix: " + ComputeSolution(p_string));
 					// For parentheses check if there are two number next to each other
 				} else {
-					System.out.println("PostFix" + PrefixSolution(p_string));
+					System.out.println("PostFix" + ComputeSolution(p_string));
 				}
 			}
 		}
 		
-		public static String PrefixSolution(String p_string) {
+		public static String ComputeSolution(String p_string) {
 			String _result= "";
 			List<String> _parts = new ArrayList<>(Arrays.stream(p_string.split(" ")).toList());
-			List<String> _equations = new ArrayList<>();
 			
-			int shift = 0;
-			if(IsPrefix(p_string)) shift = _parts.size() - 1;
-			for (int i = _parts.size() - 1; i >= 0; i--) {
-				String __part = _parts.get(i);
-				//System.out.println(__part + "=" + m_opperators[4] + __part.contains(m_opperators[4]));
-				//System.out.println("Part: " + __part + " Check: " + Arrays.asList(m_opperators).contains((__part)));
+			// This allows for prefix and postfix to be done in one method
+			// The left and right replace 'i' as the index access so that checks can be done starting from either left or right
+			// It makes the code more compact as doing two methods takes a lot of extra lines
+			boolean _isPrefix = IsPrefix(p_string);
+			int __leftI, __rightI, _size = _parts.size();
+			if(_isPrefix) {
+				__leftI = _parts.size();
+				__rightI = _parts.size();
+			} else {
+				__leftI = 0;
+				__rightI = 0;
+			}
+			
+			for (int i = 0; i < _size; i++) {
+				// Updates left and right checks depending on if its prefix or not
+				if(_isPrefix) {
+					__leftI--; __rightI = _parts.size();
+				} else __rightI++;
+				
+				String __part = "";
+				if(_isPrefix) __part = _parts.get(__leftI);
+				else __part = _parts.get(__rightI);
 				if (Arrays.asList(m_opperators).contains((__part))) {
 					// Use ignores and includes to determine what is an operator and what is not
 					// This is used to get operands of the equation and put those on the ends of operators
 					// This can also be achieved with while loops and a counter, but this is easier for me to read/write (though it's probably significantly less performant)
 					List<String> _ignores = new ArrayList<>(Arrays.stream(m_opperators).toList());
-					List<String> _includes = _parts.subList(i + 1, _parts.size());
+					List<String> _includes = _parts.subList(__leftI, __rightI);
 					
 					// Finds the left operand
 					String ___left = _parts.stream()
@@ -145,26 +160,32 @@ public class ConvertInfixMT {
 					
 					//System.out.println("List: " + Utils.ArrayU.ArrayToString(_parts.toArray(String[]::new), 0) + " Length: " + _parts.size());
 					// Writes out that part of the equation
-					String ___equation = "(" + ___left + " " + __part + " " + ___right + ")";
+					_result = "(" + ___left + " " + __part + " " + ___right + ")";
 					
-					// Replaces the original equation with the new one
+					
 					//System.out.println("Includes: " + Utils.ArrayU.ArrayToString(_includes.toArray(String[]::new), 1));
-					System.out.println("Includes: " + _includes.get(0));
-					System.out.println("Includes: " + _includes.get(1));
-					System.out.println("Parts: " + Utils.ArrayU.ArrayToString(_parts.toArray(String[]::new), 0));
-					_parts.set(i, ___equation);
-					_parts.remove(i + 1);
-					_parts.remove(i + 1);
 					
-					_equations.add(___equation);
-					System.out.println("Left: " + ___left);
-					System.out.println("Right: " + ___right);
-					System.out.println("Equation: " + ___equation);
-					System.out.println("I: " + i);
+					//System.out.println("Includes: " + _includes.get(0));
+					//System.out.println("Includes: " + _includes.get(1));
+					
+					//System.out.println("Parts: " + Utils.ArrayU.ArrayToString(_parts.toArray(String[]::new), 0));
+					// Replaces the original equation with the new one
+					if(_isPrefix) {
+						_parts.set(__leftI, _result);
+						for (int ____j = 0; ____j < 2; ____j++)
+							_parts.remove(__leftI + 1);
+					} else {
+						_parts.set(__rightI, _result);
+						for (int ____j = 0; ____j < 2; ____j++)
+							_parts.remove(__rightI - 1);
+					}
+					//System.out.println("Left: " + ___left);
+					//System.out.println("Right: " + ___right);
+					//System.out.println("Equation: " + ___equation);
+					//System.out.println("I: " + i);
 					//System.out.println("Parts: " + Utils.ArrayU.ArrayToString(_parts.toArray(String[]::new), 0));
 					//System.out.println("Result: " + _result);
-					System.out.println();
-					_result = ___equation;
+					//System.out.println();
 				}
 			}
 			return _result.toString();
