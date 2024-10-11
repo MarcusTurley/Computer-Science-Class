@@ -36,8 +36,8 @@ public class ConvertInfixMT {
 		// Inits the game states and gets the GameMode the user wants to play in
 		SetGameMode(GameMode.None);
 		
-		// Runs the algorithm the user input and answer
-		Play();
+		// Runs an algorithm to solve the given problem
+		Solve();
 		
 		ConvertInfixMT.Game.Data.DisplayResults();
 		SetGameState(GameState.End);
@@ -45,7 +45,7 @@ public class ConvertInfixMT {
 	}
 	
 	// Plays the game
-	private static void Play() {
+	private static void Solve() {
 		for (int ___case = 1; ___case <= ConvertInfixMT.FileData.TestCases(); ___case++) {
 			System.out.println("Enter expression [Can up to 30 operands and operators long]: ");
 			String _line;
@@ -621,7 +621,7 @@ public class ConvertInfixMT {
 					System.out.println();
 					
 					// Default name for efficiency
-					if (m_fileName.isEmpty()) //m_fileName = "bogglewords";
+					if (m_fileName.isEmpty())
 						m_fileName = "WordGameDictionary";
 					if (m_fileName.contains(".")) m_fileName = m_fileName.substring(0, m_fileName.indexOf("."));
 					

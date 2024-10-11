@@ -22,7 +22,7 @@ public class PrintQueue {
 	public static void main(String[] args) {
 		// Checks if user wants to execute program again
 		do {
-			SpaceScreen();
+			SetMethods.SpaceScreen();
 			ProblemOne();
 			do {
 				System.out.print("Run Again (Y / N) : ");
@@ -36,20 +36,62 @@ public class PrintQueue {
 		// Inits the game states and gets the GameMode the user wants to play in
 		SetGameMode(PrintQueue.Game.Data.GameMode.None);
 		
-		// Sets up the GameBoard
-		PrintQueue.Game.Board _gameBoard = new PrintQueue.Game.Board();
-		
-		// Runs the algorithm the user input and answer
-		Play(_gameBoard);
+		// Runs an algorithm to solve the given problem
+		Solve();
 		
 		PrintQueue.Game.Data.DisplayResults();
 		SetGameState(PrintQueue.Game.Data.GameState.End);
 		SetGameResult(GameResult.None);
 	}
 	// Plays the game
-	private static void Play(PrintQueue.Game.Board p_gameBoard) {
-		for (int ___case = 1; ___case <= PrintQueue.FileData.TestCases(); ___case++) {
-		
+	private static void Solve() {
+		FileData.GetUserFileData();
+		if(FileData.TestCasesCount() >= 1 && FileData.TestCasesCount() <= 100) {
+			for (int __case = 1; __case <= PrintQueue.FileData.TestCasesCount(); __case++) {
+				PriorityQueue<Integer> _jobQueue = new PriorityQueue<>();
+				int _time = 0;
+				
+				String[] _queueData = FileData.GetCurrentLine().split(" ");
+				if (Arrays.stream(_queueData).anyMatch((x -> !Utils.StringU.isStringNumber(x)))) {
+					FileData.ChangeFileIndex(1);
+					System.out.println("Could not process job because all inputs must be integers");
+					continue;
+				}
+				int _size = Integer.parseInt(_queueData[0]), _position = Integer.parseInt(_queueData[1]);
+				
+				String[] _priorities = FileData.GetCurrentLine().split(" ");
+				_size = Math.min(_size, _priorities.length);
+				if (Arrays.stream(_priorities).anyMatch((x -> !Utils.StringU.isStringNumber(x)))) {
+					System.out.println("Could not process job because all inputs must be integers");
+					continue;
+				}
+				else if (_position > _size) {
+					System.out.println("Could not process job because the position was greater than the job count");
+					continue;
+				}
+				
+				for (int i = 0; i < _size; i++) {
+					int _priorityJob = Integer.parseInt(_priorities[_position]);
+					int _currentJob = Integer.parseInt(_priorities[i]);
+					_jobQueue.add(_currentJob);
+					if(_currentJob <= _priorityJob) {
+						_time++;
+						_jobQueue.remove(_currentJob);
+						System.out.print(_currentJob + " ");
+					}
+				}
+				
+				/*
+				System.out.println("Queue: ");
+				for (int _job : _jobQueue) {
+					System.out.print(_job + " ");
+				}
+				System.out.println();
+				*/
+				if (_time > 1) System.out.println("Job " + __case + ": " + _time + " minutes");
+				else System.out.println("Job " + __case + ": " + _time + " minute");
+				//_jobQueue.add();
+			}
 		}
 	}
 	
@@ -58,13 +100,15 @@ public class PrintQueue {
 		
 	}
 	
-	// Spaces the console a bit (replaces system('cls'))
-	private static void SpaceScreen() { SpaceScreen(1, false); }
-	private static void SpaceScreen(int p_size) { SpaceScreen(p_size, false); }
-	private static void SpaceScreen(boolean p_newLine) { SpaceScreen(1, p_newLine); }
-	private static void SpaceScreen(int p_size, boolean p_newLine) {
-		if (p_newLine) System.out.println();
-		for (int i = 0; i < p_size; i++) System.out.println("________________________________________________________________________________");
+	private static class SetMethods {
+		// Spaces the console a bit (replaces system('cls'))
+		private static void SpaceScreen () { SpaceScreen(1, false); }
+		private static void SpaceScreen ( int p_size){ SpaceScreen(p_size, false); }
+		private static void SpaceScreen ( boolean p_newLine){ SpaceScreen(1, p_newLine); }
+		private static void SpaceScreen ( int p_size, boolean p_newLine){
+			if (p_newLine) System.out.println();
+			for (int i = 0; i < p_size; i++) System.out.println("________________________________________________________________________________");
+		}
 	}
 	
 	protected static class Game {
@@ -456,9 +500,17 @@ public class PrintQueue {
 		public static List<String> Data() { return m_fileData; }
 		
 		private static int m_testCaseCount = 1;
-		public static int TestCases() { return m_testCaseCount; }
-		public static int m_fileIndex;
+		public static int TestCasesCount() { return m_testCaseCount; }
+		private static int m_fileIndex;
 		public static int FileIndex() { return m_fileIndex; }
+		public static void ChangeFileIndex(int p_amount) { m_fileIndex += p_amount; }
+		public static String GetCurrentLine() {
+			if(m_fileData.size() > m_fileIndex) {
+				m_fileIndex++;
+				return m_fileData.get(m_fileIndex - 1);
+			}
+			return "";
+		};
 		
 		public static boolean m_beenRead;
 		public static boolean BeenRead() { return m_beenRead; }
@@ -470,7 +522,7 @@ public class PrintQueue {
 			while (!m_beenRead) {
 				try {
 					m_fileData = new ArrayList<>();
-					SpaceScreen();
+					SetMethods.SpaceScreen();
 					System.out.println("*Leave blank for default*");
 					System.out.print("Enter filename: ");
 					// Gets user file name
@@ -478,8 +530,8 @@ public class PrintQueue {
 					System.out.println();
 					
 					// Default name for efficiency
-					if (m_fileName.isEmpty()) //m_fileName = "bogglewords";
-						m_fileName = "WordGameDictionary";
+					if (m_fileName.isEmpty())
+						m_fileName = "printer";
 					if (m_fileName.contains(".")) m_fileName = m_fileName.substring(0, m_fileName.indexOf("."));
 					
 					try {
@@ -731,6 +783,23 @@ public class PrintQueue {
 				public static int Add() {
 					return 1;
 				}
+			}
+		}
+	}
+	
+	protected static class DataStructs {
+		private static class Pair<t_Any1, t_Any2> {
+			private t_Any1 _first;
+			private t_Any2 _second;
+			
+			public t_Any1 First() { return _first; }
+			public t_Any2 Second() { return _second; }
+			
+			public void SetFirst(t_Any1 p_first) { _first = p_first; }
+			public void SetSecond(t_Any2 p_second) { _second = p_second; }
+			
+			Pair(t_Any1 p_first, t_Any2 p_second) {
+				this._first = p_first; this._second = p_second;
 			}
 		}
 	}
