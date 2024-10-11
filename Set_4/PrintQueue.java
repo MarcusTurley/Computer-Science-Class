@@ -16,9 +16,9 @@ import java.io.InputStreamReader;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static Set_4.ConvertInfixMT.Game.Data.*;
+import static Set_4.PrintQueue.Game.Data.*;
 
-public class ConvertInfixMT {
+public class PrintQueue {
 	public static void main(String[] args) {
 		// Checks if user wants to execute program again
 		do {
@@ -26,179 +26,36 @@ public class ConvertInfixMT {
 			ProblemOne();
 			do {
 				System.out.print("Run Again (Y / N) : ");
-				ConvertInfixMT.User.UserChar();
-			} while (ConvertInfixMT.User.UserInput().charAt(0) != 'Y' && ConvertInfixMT.User.UserInput().charAt(0) != 'N');
-		} while (ConvertInfixMT.User.UserInput().charAt(0) != 'N');
+				PrintQueue.User.UserChar();
+			} while (PrintQueue.User.UserInput().charAt(0) != 'Y' && PrintQueue.User.UserInput().charAt(0) != 'N');
+		} while (PrintQueue.User.UserInput().charAt(0) != 'N');
 	}
 	
 	// Solves the problem
 	private static void ProblemOne() {
 		// Inits the game states and gets the GameMode the user wants to play in
-		SetGameMode(GameMode.None);
+		SetGameMode(PrintQueue.Game.Data.GameMode.None);
+		
+		// Sets up the GameBoard
+		PrintQueue.Game.Board _gameBoard = new PrintQueue.Game.Board();
 		
 		// Runs the algorithm the user input and answer
-		Play();
+		Play(_gameBoard);
 		
-		ConvertInfixMT.Game.Data.DisplayResults();
-		SetGameState(GameState.End);
+		PrintQueue.Game.Data.DisplayResults();
+		SetGameState(PrintQueue.Game.Data.GameState.End);
 		SetGameResult(GameResult.None);
 	}
-	
 	// Plays the game
-	private static void Play() {
-		for (int ___case = 1; ___case <= ConvertInfixMT.FileData.TestCases(); ___case++) {
-			System.out.println("Enter expression [Can up to 30 operands and operators long]: ");
-			String _line;
-			String[] _lineArr;
-			boolean _validInput;
-			if (false)
-				do {
-				_line = User.UserString();
-				_lineArr = _line.split(" ");
-				_validInput = !_line.isEmpty() && (_lineArr.length > 0) && (_lineArr.length <= 30);
-				if(_validInput) {
-					_validInput = Algorithm.IsInfix(_line);
-					if(_validInput) {
-						SpaceScreen();
-						if (Algorithm.IsPrefix(_line)) System.out.print("From prefix to Infix: ");
-						else System.out.print("From postfix to Infix: ");
-						System.out.println(Algorithm.ConvertToInfix(_line));
-					} else {
-						System.out.println("This is not a valid equation");
-						System.out.println("Please enter a valid equation\n");
-					}
-				} else if(_line.isEmpty()) {
-					System.out.println("You entered an empty string");
-					System.out.println("Please enter a valid input\n");
-				} else {
-					System.out.println("The answer you entered was " + _lineArr.length + " operands and operators long");
-					System.out.println("Please enter an amount that is 30 or below\n");
-				}
-			} while (!_validInput);
-			
-			//_line = "A B + C / D - E -";
-			//_lineArr = _line.split(" ");
-			//System.out.println(Utils.ArrayU.ArrayToString(_lineArr));
-			//Algorithm.ConvertToInfix(_line);
-			
-			_line = "* + 15 / + Z 7 9 / X 2";
-			_lineArr = _line.split(" ");
-			SpaceScreen();
-			System.out.println(_lineArr.length);
-			System.out.println(Utils.ArrayU.ArrayToString(_lineArr));
-			Algorithm.ConvertToInfix(_line);
-			
-			_line = "/ * - + A B C - + A B D * * - A B C - A D";
-			_lineArr = _line.split(" ");
-			SpaceScreen();
-			System.out.println(Utils.ArrayU.ArrayToString(_lineArr));
-			Algorithm.ConvertToInfix(_line);
-			
-			//System.out.println();
-			//_line = "* + 15 / + 7 9 / X 2";
-			//_lineArr = _line.split(" ");
-			//System.out.println(Utils.ArrayU.ArrayToString(_lineArr));
-			//Algorithm.ConvertToInfix(_line);
-			
-			//SpaceScreen(2);
-			//p_gameBoard.RenderBoard();
-			//SpaceScreen();
-			SpaceScreen();
+	private static void Play(PrintQueue.Game.Board p_gameBoard) {
+		for (int ___case = 1; ___case <= PrintQueue.FileData.TestCases(); ___case++) {
+		
 		}
 	}
 	
 	// Solves the problem with a given algorithm
 	private static class Algorithm {
-		private static final String[] m_opperators = new String[] { "^", "*", "/", "+", "-" };
 		
-		public static String ConvertToInfix(String p_string) {
-			if(IsInfix(p_string)) {
-				return ComputeSolution(p_string);
-			}
-			return "";
-		}
-		
-		public static String ComputeSolution(String p_string) {
-			String _result= "";
-			List<String> _parts = new ArrayList<>(Arrays.stream(p_string.split(" ")).toList());
-			
-			// This allows for prefix and postfix to be done in one method
-			// The left and right replace 'i' as the index access so that checks can be done starting from either left or right
-			// It makes the code more compact as doing two methods takes a lot of extra lines
-			boolean _isPrefix = IsPrefix(p_string);
-			int __leftI, __rightI, _size = _parts.size();
-			if(_isPrefix) {
-				__leftI = _parts.size();
-				__rightI = _parts.size();
-			} else {
-				__leftI = 0;
-				__rightI = 0;
-			}
-			
-			for (int i = 0; i < _size; i++) {
-				// Updates left and right checks depending on if its prefix or not
-				if(_isPrefix) {
-					__leftI--; __rightI = _parts.size();
-				} else __rightI++;
-				
-				String __part = "";
-				if(_isPrefix) __part = _parts.get(__leftI);
-				else __part = _parts.get(__rightI);
-				if (Arrays.asList(m_opperators).contains((__part))) {
-					// Use ignores and includes to determine what is an operator and what is not
-					// This is used to get operands of the equation and put those on the ends of operators
-					// This can also be achieved with while loops and a counter, but this is easier for me to read/write (though it's probably significantly less performant)
-					List<String> _ignores = new ArrayList<>(Arrays.stream(m_opperators).toList());
-					List<String> _includes = _parts.subList(__leftI, __rightI);
-					
-					// Finds the left operand
-					String ___left = _parts.stream()
-									.filter(x -> _includes.stream().anyMatch(x::equalsIgnoreCase))
-									.filter(x -> _ignores.stream().noneMatch(x::equalsIgnoreCase)).findFirst().orElse(null);
-					_ignores.add(___left);
-					
-					// Finds the right operand
-					String ___right = _parts.stream()
-									.filter(x -> _includes.stream().anyMatch(x::equalsIgnoreCase))
-									.filter(x -> _ignores.stream().noneMatch(x::equalsIgnoreCase)).findFirst().orElse(null);
-					_ignores.add(___right);
-					
-					//System.out.println("List: " + Utils.ArrayU.ArrayToString(_parts.toArray(String[]::new), 0) + " Length: " + _parts.size());
-					// Writes out that part of the equation
-					_result = "(" + ___left + " " + __part + " " + ___right + ")";
-					
-					
-					//System.out.println("Includes: " + Utils.ArrayU.ArrayToString(_includes.toArray(String[]::new), 1));
-					
-					//System.out.println("Includes: " + _includes.get(0));
-					//System.out.println("Includes: " + _includes.get(1));
-					
-					//System.out.println("Parts: " + Utils.ArrayU.ArrayToString(_parts.toArray(String[]::new), 0));
-					// Replaces the original equation with the new one
-					if(_isPrefix) {
-						_parts.set(__leftI, _result);
-						for (int ____j = 0; ____j < 2; ____j++)
-							_parts.remove(__leftI + 1);
-					} else {
-						_parts.set(__rightI, _result);
-						for (int ____j = 0; ____j < 2; ____j++)
-							_parts.remove(__rightI - 1);
-					}
-					//System.out.println("Left: " + ___left);
-					//System.out.println("Right: " + ___right);
-					//System.out.println("Equation: " + ___equation);
-					//System.out.println("I: " + i);
-					//System.out.println("Parts: " + Utils.ArrayU.ArrayToString(_parts.toArray(String[]::new), 0));
-					//System.out.println("Result: " + _result);
-					//System.out.println();
-				}
-			}
-			return _result.toString();
-		}
-		
-		public static boolean IsInfix(String p_string) { return Arrays.stream(m_opperators).anyMatch(p_string::contains); }
-		
-		public static boolean IsPrefix(String p_string) { return Arrays.stream(m_opperators).anyMatch((p_string.charAt(0) + "")::equalsIgnoreCase); }
 	}
 	
 	// Spaces the console a bit (replaces system('cls'))
@@ -215,7 +72,7 @@ public class ConvertInfixMT {
 		public enum Direction {
 			Forward, Right, Back, Left, rUp, rDown, rRight, rLeft;
 			
-			public static ConvertInfixMT.Game.Direction toEnum(int p_val) {
+			public static PrintQueue.Game.Direction toEnum(int p_val) {
 				//p_val = p_val % MoveDirection.values().length;
 				switch (p_val) {
 					case 0 -> { return Forward; }
@@ -230,7 +87,7 @@ public class ConvertInfixMT {
 				return Forward;
 			}
 			
-			public ConvertInfixMT.Game.Direction opposite() {
+			public PrintQueue.Game.Direction opposite() {
 				switch (this) {
 					case Forward -> { return Back; }
 					case Back -> { return Forward; }
@@ -265,45 +122,45 @@ public class ConvertInfixMT {
 			public enum GameMode { None, Game, Demo }
 			public enum GameResult { None, Won, Lost}
 			
-			private static ConvertInfixMT.Game.Data.GameState m_state = ConvertInfixMT.Game.Data.GameState.Initializing;
-			private static ConvertInfixMT.Game.Data.GameMode m_mode = ConvertInfixMT.Game.Data.GameMode.None;
-			private static ConvertInfixMT.Game.Data.GameResult m_result = ConvertInfixMT.Game.Data.GameResult.None;
+			private static PrintQueue.Game.Data.GameState m_state = PrintQueue.Game.Data.GameState.Initializing;
+			private static PrintQueue.Game.Data.GameMode m_mode = PrintQueue.Game.Data.GameMode.None;
+			private static PrintQueue.Game.Data.GameResult m_result = PrintQueue.Game.Data.GameResult.None;
 			
-			public static ConvertInfixMT.Game.Data.GameState GameState() { return m_state; }
-			public static ConvertInfixMT.Game.Data.GameMode GameMode() { return m_mode; }
-			public static ConvertInfixMT.Game.Data.GameResult GameResult() { return m_result; }
+			public static PrintQueue.Game.Data.GameState GameState() { return m_state; }
+			public static PrintQueue.Game.Data.GameMode GameMode() { return m_mode; }
+			public static PrintQueue.Game.Data.GameResult GameResult() { return m_result; }
 			
-			public static void SetGameState(ConvertInfixMT.Game.Data.GameState p_state) { m_state = p_state; }
-			public static void SetGameMode(ConvertInfixMT.Game.Data.GameMode p_mode) { m_mode = p_mode; }
-			public static void SetGameResult(ConvertInfixMT.Game.Data.GameResult p_result) { m_result = p_result; }
+			public static void SetGameState(PrintQueue.Game.Data.GameState p_state) { m_state = p_state; }
+			public static void SetGameMode(PrintQueue.Game.Data.GameMode p_mode) { m_mode = p_mode; }
+			public static void SetGameResult(PrintQueue.Game.Data.GameResult p_result) { m_result = p_result; }
 			
-			public static void Init() { Init(ConvertInfixMT.Game.Data.GameMode.None); }
-			public static void Init(ConvertInfixMT.Game.Data.GameMode p_mode) {
-				SetGameState(ConvertInfixMT.Game.Data.GameState.Initializing);
+			public static void Init() { Init(PrintQueue.Game.Data.GameMode.None); }
+			public static void Init(PrintQueue.Game.Data.GameMode p_mode) {
+				SetGameState(PrintQueue.Game.Data.GameState.Initializing);
 				SetGameMode(p_mode);
 			}
 			
 			public static void GetGameMode() {
 				do {
 					System.out.println("Enter [D/d]-demo mode or [G/g]-game mode: ");
-					ConvertInfixMT.User.UserChar();
-					if (!ConvertInfixMT.User.IsLineEmpty()) {
-						switch (Character.toUpperCase(ConvertInfixMT.User.UserInput().charAt(0))) {
+					PrintQueue.User.UserChar();
+					if (!PrintQueue.User.IsLineEmpty()) {
+						switch (Character.toUpperCase(PrintQueue.User.UserInput().charAt(0))) {
 							case 'G':
-								SetGameMode(ConvertInfixMT.Game.Data.GameMode.Game);
-								SetGameState(ConvertInfixMT.Game.Data.GameState.Playing);
+								SetGameMode(PrintQueue.Game.Data.GameMode.Game);
+								SetGameState(PrintQueue.Game.Data.GameState.Playing);
 								break;
 							case 'D':
-								SetGameMode(ConvertInfixMT.Game.Data.GameMode.Demo);
-								SetGameState(ConvertInfixMT.Game.Data.GameState.Playing);
+								SetGameMode(PrintQueue.Game.Data.GameMode.Demo);
+								SetGameState(PrintQueue.Game.Data.GameState.Playing);
 								break;
 						}
 					}
-				} while (GameMode() == ConvertInfixMT.Game.Data.GameMode.None);
+				} while (GameMode() == PrintQueue.Game.Data.GameMode.None);
 			}
 			
 			private static void DisplayResults() {
-				switch (ConvertInfixMT.Game.Data.m_result) {
+				switch (PrintQueue.Game.Data.m_result) {
 					case Won -> System.out.println("You won!!!\nCongradulations!!!");
 					case Lost -> System.out.println("You lost...\nTry again!");
 				}
@@ -322,14 +179,14 @@ public class ConvertInfixMT {
 				GameBoards.remove(this);
 			}
 			
-			private static ConvertInfixMT.Game.Board ActiveBoard;
+			private static PrintQueue.Game.Board ActiveBoard;
 			
-			public static ConvertInfixMT.Game.Board ActiveBoard() { return ActiveBoard; }
+			public static PrintQueue.Game.Board ActiveBoard() { return ActiveBoard; }
 			
 			
-			private static List<ConvertInfixMT.Game.Board> GameBoards = new ArrayList<>();
+			private static List<PrintQueue.Game.Board> GameBoards = new ArrayList<>();
 			
-			public static List<ConvertInfixMT.Game.Board> GameBoards() { return GameBoards; }
+			public static List<PrintQueue.Game.Board> GameBoards() { return GameBoards; }
 			// PlayBoard contains all moving assets that go on top of the GameBoard
 			// GameBoard contains all the assets that are within the DisplayBoard's borders
 			// DisplayBoard contains the parsed PlayBoard, GameBoard, and extra visual content (eg. margins, borders)
@@ -346,12 +203,12 @@ public class ConvertInfixMT {
 			public void PlayBoardSetArray(String[][] p_arr) { m_playBoard = p_arr; }
 			public void PlayBoardSetIndex(String p_str, int p_x, int p_y) { m_playBoard[p_y][p_x] = p_str; }
 			public void PlayBoardRemoveIndex(String p_str) {
-				int[] _index = ConvertInfixMT.Utils.ArrayU.Array2DFind(m_playBoard, p_str);
+				int[] _index = PrintQueue.Utils.ArrayU.Array2DFind(m_playBoard, p_str);
 				if (_index[0] > -1 && _index[1] > -1) m_playBoard[_index[1]][_index[0]] = m_boardAssets[0];
 			}
 			public void PlayBoardSwapIndex(String p_str, int p_x, int p_y) {
-				int[] _index = ConvertInfixMT.Utils.ArrayU.Array2DFind(m_playBoard, p_str);
-				if (_index[0] > -1 && _index[1] > -1) ConvertInfixMT.Utils.ArrayU.Array2DSwap(m_playBoard, _index[0], _index[1], p_x, p_y);
+				int[] _index = PrintQueue.Utils.ArrayU.Array2DFind(m_playBoard, p_str);
+				if (_index[0] > -1 && _index[1] > -1) PrintQueue.Utils.ArrayU.Array2DSwap(m_playBoard, _index[0], _index[1], p_x, p_y);
 			}
 			
 			private final String[] m_boardAssets = new String[]{ "?", "-", "|", "+", "." };
@@ -430,7 +287,7 @@ public class ConvertInfixMT {
 					UpdateDisplayBoard(m_playBoard, m_boardAssets[0]);
 				}
 				for (String[] _arr : m_displayBoard)
-					System.out.println(ConvertInfixMT.Utils.ArrayU.ArrayToString(_arr, ConvertInfixMT.Utils.ArrayU.LongestStringIn2DArray(m_displayBoard)));
+					System.out.println(PrintQueue.Utils.ArrayU.ArrayToString(_arr, PrintQueue.Utils.ArrayU.LongestStringIn2DArray(m_displayBoard)));
 			}
 			
 			// Generates a template game board that can be resized with border and margins
@@ -617,7 +474,7 @@ public class ConvertInfixMT {
 					System.out.println("*Leave blank for default*");
 					System.out.print("Enter filename: ");
 					// Gets user file name
-					m_fileName = ConvertInfixMT.User.UserString();
+					m_fileName = PrintQueue.User.UserString();
 					System.out.println();
 					
 					// Default name for efficiency
@@ -633,7 +490,7 @@ public class ConvertInfixMT {
 						}
 						m_beenRead = true;
 						_scanner.close();
-						if (ConvertInfixMT.Utils.StringU.isStringNumber(m_fileData.get(0))) {
+						if (PrintQueue.Utils.StringU.isStringNumber(m_fileData.get(0))) {
 							m_testCaseCount = Integer.parseInt(m_fileData.get(0));
 							m_fileIndex = 1;
 						}
@@ -667,7 +524,7 @@ public class ConvertInfixMT {
 			return _allUserStrings.toArray(String[]::new);
 		}
 		
-		public ConvertInfixMT.User WaitForValid(String [] p_ignores) {
+		public PrintQueue.User WaitForValid(String [] p_ignores) {
 			return this;
 		}
 		
@@ -680,7 +537,7 @@ public class ConvertInfixMT {
 		// Gets the user's input as a number
 		public static float UserNum() {
 			m_userInput = UserString();
-			if (ConvertInfixMT.Utils.StringU.isStringNumber(m_userInput)) return Integer.parseInt(m_userInput);
+			if (PrintQueue.Utils.StringU.isStringNumber(m_userInput)) return Integer.parseInt(m_userInput);
 			return -1;
 		}
 		
@@ -775,7 +632,7 @@ public class ConvertInfixMT {
 				if (p_arr == null || p_arr.length == 0) return "";
 				String _result = "";
 				for (t_Any __str : p_arr) _result += __str + " ";
-				return ConvertInfixMT.Utils.StringU.SpaceEvenly(_result.substring(0, _result.length() - 1), " ", p_spacing);
+				return PrintQueue.Utils.StringU.SpaceEvenly(_result.substring(0, _result.length() - 1), " ", p_spacing);
 			}
 			
 			// Finds the longest String within a 2D array
@@ -802,7 +659,7 @@ public class ConvertInfixMT {
 			public static String SpaceEvenly(String p_str, String p_split, int p_spacing) {
 				String _result = "";
 				List<String> _items = Arrays.stream(p_str.split(p_split)).toList();
-				if (p_spacing < 0) p_spacing = ConvertInfixMT.Utils.ArrayU.LongestStringInArray(_items.toArray(new String[0]));
+				if (p_spacing < 0) p_spacing = PrintQueue.Utils.ArrayU.LongestStringInArray(_items.toArray(new String[0]));
 				for (int i = 0; i < _items.size(); i++) {
 					_result = _result.concat(_items.get(i));
 					if (i < _items.size() - 1) for (int j = p_spacing + 1; j > _items.get(i).length(); j--)
