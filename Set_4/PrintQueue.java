@@ -51,6 +51,7 @@ public class PrintQueue {
 				PriorityQueue<Integer> _jobQueue = new PriorityQueue<>();
 				int _time = 0;
 				
+				// Gets the data about job length and priority position
 				String[] _queueData = FileData.GetCurrentLine().split(" ");
 				if (Arrays.stream(_queueData).anyMatch((x -> !Utils.StringU.isStringNumber(x)))) {
 					FileData.ChangeFileIndex(1);
@@ -59,6 +60,7 @@ public class PrintQueue {
 				}
 				int _size = Integer.parseInt(_queueData[0]), _position = Integer.parseInt(_queueData[1]);
 				
+				// Gets the priorities from the file
 				String[] _priorities = FileData.GetCurrentLine().split(" ");
 				_size = Math.min(_size, _priorities.length);
 				if (Arrays.stream(_priorities).anyMatch((x -> !Utils.StringU.isStringNumber(x)))) {
@@ -74,30 +76,21 @@ public class PrintQueue {
 					int _priorityJob = Integer.parseInt(_priorities[_position]);
 					int _currentJob = Integer.parseInt(_priorities[i]);
 					_jobQueue.add(_currentJob);
+					
 					if(_currentJob <= _priorityJob) {
 						_time++;
 						_jobQueue.remove(_currentJob);
-						System.out.print(_currentJob + " ");
 					}
 				}
 				
-				/*
-				System.out.println("Queue: ");
-				for (int _job : _jobQueue) {
-					System.out.print(_job + " ");
-				}
 				System.out.println();
-				*/
+				
+				// Outputs the time
 				if (_time > 1) System.out.println("Job " + __case + ": " + _time + " minutes");
 				else System.out.println("Job " + __case + ": " + _time + " minute");
-				//_jobQueue.add();
 			}
+			SetMethods.SpaceScreen();
 		}
-	}
-	
-	// Solves the problem with a given algorithm
-	private static class Algorithm {
-		
 	}
 	
 	private static class SetMethods {

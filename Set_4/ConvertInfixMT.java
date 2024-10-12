@@ -51,15 +51,17 @@ public class ConvertInfixMT {
 			String _line;
 			String[] _lineArr;
 			boolean _validInput;
-			if (false)
-				do {
+			do {
 				_line = User.UserString();
 				_lineArr = _line.split(" ");
+				
+				// Helps account for user error
 				_validInput = !_line.isEmpty() && (_lineArr.length > 0) && (_lineArr.length <= 30);
 				if(_validInput) {
 					_validInput = Algorithm.IsInfix(_line);
 					if(_validInput) {
 						SpaceScreen();
+						// Converts the string to infix
 						if (Algorithm.IsPrefix(_line)) System.out.print("From prefix to Infix: ");
 						else System.out.print("From postfix to Infix: ");
 						System.out.println(Algorithm.ConvertToInfix(_line));
@@ -76,60 +78,35 @@ public class ConvertInfixMT {
 				}
 			} while (!_validInput);
 			
-			//_line = "A B + C / D - E -";
-			//_lineArr = _line.split(" ");
-			//System.out.println(Utils.ArrayU.ArrayToString(_lineArr));
-			//Algorithm.ConvertToInfix(_line);
-			
-			_line = "* + 15 / + Z 7 9 / X 2";
-			_lineArr = _line.split(" ");
-			SpaceScreen();
-			System.out.println(_lineArr.length);
-			System.out.println(Utils.ArrayU.ArrayToString(_lineArr));
-			Algorithm.ConvertToInfix(_line);
-			
-			_line = "/ * - + A B C - + A B D * * - A B C - A D";
-			_lineArr = _line.split(" ");
-			SpaceScreen();
-			System.out.println(Utils.ArrayU.ArrayToString(_lineArr));
-			Algorithm.ConvertToInfix(_line);
-			
-			//System.out.println();
-			//_line = "* + 15 / + 7 9 / X 2";
-			//_lineArr = _line.split(" ");
-			//System.out.println(Utils.ArrayU.ArrayToString(_lineArr));
-			//Algorithm.ConvertToInfix(_line);
-			
-			//SpaceScreen(2);
-			//p_gameBoard.RenderBoard();
-			//SpaceScreen();
 			SpaceScreen();
 		}
 	}
 	
 	// Solves the problem with a given algorithm
 	private static class Algorithm {
-		private static final String[] m_opperators = new String[] { "^", "*", "/", "+", "-" };
+		private static final String[] m_operators = new String[] { "^", "*", "/", "+", "-" };
 		
-		public static String ConvertToInfix(String p_string) {
-			if(IsInfix(p_string)) {
-				return ComputeSolution(p_string);
+		public static String ConvertToInfix(String p_equation) {
+			if(IsInfix(p_equation)) {
+				System.out.println(ComputeSolution(p_equation));
+				//return SimplifyEquation(ComputeSolution(p_equation));
+				return ComputeSolution(p_equation);
 			}
 			return "";
 		}
 		
-		public static String ComputeSolution(String p_string) {
+		public static String ComputeSolution(String p_equation) {
 			String _result= "";
-			List<String> _parts = new ArrayList<>(Arrays.stream(p_string.split(" ")).toList());
+			List<String> _parts = new ArrayList<>(Arrays.stream(p_equation.split(" ")).toList());
 			
 			// This allows for prefix and postfix to be done in one method
 			// The left and right replace 'i' as the index access so that checks can be done starting from either left or right
 			// It makes the code more compact as doing two methods takes a lot of extra lines
-			boolean _isPrefix = IsPrefix(p_string);
+			boolean _isPrefix = IsPrefix(p_equation);
 			int __leftI, __rightI, _size = _parts.size();
 			if(_isPrefix) {
-				__leftI = _parts.size();
-				__rightI = _parts.size();
+				__leftI = _parts.size() - 1;
+				__rightI = _parts.size() - 1;
 			} else {
 				__leftI = 0;
 				__rightI = 0;
@@ -141,14 +118,16 @@ public class ConvertInfixMT {
 					__leftI--; __rightI = _parts.size();
 				} else __rightI++;
 				
+				//if(__rightI >= _parts.size()) break;
+				
 				String __part = "";
 				if(_isPrefix) __part = _parts.get(__leftI);
 				else __part = _parts.get(__rightI);
-				if (Arrays.asList(m_opperators).contains((__part))) {
+				if (Arrays.asList(m_operators).contains((__part))) {
 					// Use ignores and includes to determine what is an operator and what is not
 					// This is used to get operands of the equation and put those on the ends of operators
 					// This can also be achieved with while loops and a counter, but this is easier for me to read/write (though it's probably significantly less performant)
-					List<String> _ignores = new ArrayList<>(Arrays.stream(m_opperators).toList());
+					List<String> _ignores = new ArrayList<>(Arrays.stream(m_operators).toList());
 					List<String> _includes = _parts.subList(__leftI, __rightI);
 					
 					// Finds the left operand
@@ -163,18 +142,8 @@ public class ConvertInfixMT {
 									.filter(x -> _ignores.stream().noneMatch(x::equalsIgnoreCase)).findFirst().orElse(null);
 					_ignores.add(___right);
 					
-					//System.out.println("List: " + Utils.ArrayU.ArrayToString(_parts.toArray(String[]::new), 0) + " Length: " + _parts.size());
 					// Writes out that part of the equation
 					_result = "(" + ___left + " " + __part + " " + ___right + ")";
-					
-					
-					//System.out.println("Includes: " + Utils.ArrayU.ArrayToString(_includes.toArray(String[]::new), 1));
-					
-					//System.out.println("Includes: " + _includes.get(0));
-					//System.out.println("Includes: " + _includes.get(1));
-					
-					//System.out.println("Parts: " + Utils.ArrayU.ArrayToString(_parts.toArray(String[]::new), 0));
-					// Replaces the original equation with the new one
 					if(_isPrefix) {
 						_parts.set(__leftI, _result);
 						for (int ____j = 0; ____j < 2; ____j++)
@@ -183,22 +152,62 @@ public class ConvertInfixMT {
 						_parts.set(__rightI, _result);
 						for (int ____j = 0; ____j < 2; ____j++)
 							_parts.remove(__rightI - 1);
+						__rightI -= 3;
 					}
-					//System.out.println("Left: " + ___left);
-					//System.out.println("Right: " + ___right);
-					//System.out.println("Equation: " + ___equation);
-					//System.out.println("I: " + i);
-					//System.out.println("Parts: " + Utils.ArrayU.ArrayToString(_parts.toArray(String[]::new), 0));
-					//System.out.println("Result: " + _result);
-					//System.out.println();
 				}
 			}
-			return _result.toString();
+			//return _result.replace("((", "(").replace("))", ")");
+			return _result;
 		}
 		
-		public static boolean IsInfix(String p_string) { return Arrays.stream(m_opperators).anyMatch(p_string::contains); }
+		public static String SimplifyEquation(String p_equation) {
+			// Counter to get the amount of open and closed parenthesis
+			int _openCount = 0;
+			int _closedCount = 0;
+			String _firstOperator = "";
+			String _secondOperator = "";
+			String _result = p_equation;
+			
+			for(int _i = 0; _i < p_equation.length(); _i++) {
+				
+				if (p_equation.charAt(_i) == '(') _openCount++;
+				else if (p_equation.charAt(_i) == ')') _closedCount++;
+				
+				for (String _operator : m_operators) {
+					if (Objects.equals(p_equation.substring(_i, Math.min(_i + _operator.length(), p_equation.length())), _operator)) {
+						if(!_secondOperator.isEmpty())
+							_firstOperator = _secondOperator;
+						
+						_secondOperator = _operator;
+						
+						if(OperatorPriority(_firstOperator) == OperatorPriority(_secondOperator)) {
+							if (!_firstOperator.isEmpty() && _closedCount + 2 < Utils.StringU.FindAll(p_equation, ")").size()) {
+								int _firstIndex = Utils.StringU.FindAll(p_equation, "(").get(_openCount - 2);
+								int _secondIndex = Utils.StringU.FindAll(p_equation, ")").get(_closedCount);
+								
+								String _subString = p_equation.substring(_firstIndex, _secondIndex + 1);
+								String _nSubString = _subString.replace("(", "").replace(")", "");
+								_result = p_equation.replace(_subString, _nSubString);
+							}
+						}
+					}
+				}
+			}
+			return _result;
+		}
 		
-		public static boolean IsPrefix(String p_string) { return Arrays.stream(m_opperators).anyMatch((p_string.charAt(0) + "")::equalsIgnoreCase); }
+		public static int OperatorPriority(String p_operator) {
+			return switch (p_operator) {
+				case "^" -> 4;
+				case "*", "/" -> 3;
+				case "+", "-" -> 2;
+				default -> -1;
+			};
+		}
+		
+		public static boolean IsInfix(String p_string) { return Arrays.stream(m_operators).anyMatch(p_string::contains); }
+		
+		public static boolean IsPrefix(String p_string) { return Arrays.stream(m_operators).anyMatch((p_string.charAt(0) + "")::equalsIgnoreCase); }
 	}
 	
 	// Spaces the console a bit (replaces system('cls'))
@@ -831,22 +840,26 @@ public class ConvertInfixMT {
 			public static String GetStringItem(String p_str, String p_splitStr, int p_index) {
 				p_index -= 1; // Increments the index by one so that when passing the index as a parameter it is from 1 - length. Only did this because an item number of 0 doesn't really make sense realistically
 				String _result = "";
-				_result = p_str.substring(FindAll(p_str, " ").get(p_index), FindAll(p_str, " ").get(Math.min(p_index + 1, FindAll(p_str, " ").size() - 1)) - 1);
+				
+				List<Integer> _indexes = new ArrayList<>();
+				_indexes.add(0);
+				_indexes.addAll(FindAll(p_str, " "));
+				_indexes.add(p_str.length());
+				
+				_result = p_str.substring(_indexes.get(p_index), _indexes.get(Math.min(p_index + 1, _indexes.size() - 1)) - 1);
 				return _result;
 			}
 			
 			// Finds the indexes of a split String
 			public static List<Integer> FindAll(String p_str, String p_splitStr) {
 				List<Integer> _indexes = new ArrayList<>();
-				_indexes.add(0);
-				int i = 0;
-				while (i != -1) {
-					_indexes.add(p_str.indexOf(p_splitStr, i) + 1);
-					i = p_str.indexOf(p_splitStr, i);
-					if (i >= p_str.lastIndexOf(p_splitStr)) break;
-					i += 1;
+				int _index = p_str.indexOf(p_splitStr);
+				
+				_indexes.add(_index);
+				while (_index != -1) {
+					_index = p_str.indexOf(p_splitStr, _index + 1);
+					if(_index != -1) _indexes.add(_index);
 				}
-				_indexes.add(p_str.length() + 1);
 				return _indexes;
 			}
 			
