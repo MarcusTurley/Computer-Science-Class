@@ -56,31 +56,68 @@ public class StringTraversals {
 			SpaceScreen();
 			System.out.println("Sentence is: " + __line + "\n");
 			
-			System.out.println("In-Order: " + Algorithm.InOrder());
-			System.out.println("Pre-Order: " + Algorithm.PreOrder());
-			System.out.println("Post-Order: " + Algorithm.PostOrder());
-			System.out.println("Level-Order: " + Algorithm.LevelOrder());
-			System.out.println("Reverse-Order: " + Algorithm.ReverseOrder());
+			System.out.println("In-Order: " + Algorithm.InOrder(__line));
+			System.out.println("Pre-Order: " + Algorithm.PreOrder(__line));
+			System.out.println("Post-Order: " + Algorithm.PostOrder(__line));
+			System.out.println("Level-Order: " + Algorithm.LevelOrder(__line));
+			System.out.println("Reverse-Order: " + Algorithm.ReverseOrder(__line));
 			SpaceScreen();
 		}
 	}
 	
 	// Solves the problem with a given algorithm
 	private static class Algorithm {
-		private static String InOrder() {
-		 return "";
+		private static String InOrder(String p_str) {
+			StringBuilder _result = new StringBuilder();
+			String[] _resultArr = p_str.split(" ");
+			
+			_resultArr = Arrays.stream(_resultArr).sorted().toArray(String[]::new);
+			for (String _str : _resultArr)
+				_result.append(_str).append(" ");
+			
+		 	return _result.toString();
 		}
-		private static String PreOrder() {
-		 return "";
+		private static String PreOrder(String p_str) {
+			StringBuilder _result = new StringBuilder();
+			String[] _resultArr = p_str.split(" ");
+			String[] _strArr = p_str.split(" ");
+			
+			int[] _priorities = new int[_strArr.length];
+			for (int _i = 0; _i < _strArr.length; _i++) {
+			
+			}
+			
+			for (String _str : _resultArr)
+				_result.append(_str).append(" ");
+			
+			return _result.toString();
 		}
-		private static String PostOrder() {
-		 return "";
+		private static String PostOrder(String p_str) {
+			StringBuilder _result = new StringBuilder();
+			String[] _resultArr = p_str.split(" ");
+			String[] _strArr = p_str.split(" ");
+			
+			for (String _str : _resultArr)
+				_result.append(_str).append(" ");
+			
+			return _result.toString();
 		}
-		private static String LevelOrder() {
-		 return "";
+		private static String LevelOrder(String p_str) {
+			StringBuilder _result = new StringBuilder();
+			String[] _resultArr = p_str.split(" ");
+			String[] _strArr = p_str.split(" ");
+			
+			for (String _str : _resultArr)
+				_result.append(_str).append(" ");
+			
+			return _result.toString();
 		}
-		private static String ReverseOrder() {
-		 return "";
+		private static String ReverseOrder(String p_str) {
+			StringBuilder _result = new StringBuilder();
+			String[] _resultArr = InOrder(p_str).split(" ");
+			for (int i = _resultArr.length - 1; i >= 0; i--)
+				_result.append(_resultArr[i]).append(" ");
+			return _result.toString();
 		}
 	}
 	
@@ -672,7 +709,13 @@ public class StringTraversals {
 			// Finds the longest String within an array
 			public static int LongestStringInArray(String[] p_arr) {
 				int _longestString = 0;
-				for (String s : p_arr) if (s.length() > _longestString) _longestString = s.length();
+				for (String s : p_arr) {
+					if (s == null) {
+						_longestString = 0;
+						continue;
+					}
+					if (s.length() > _longestString) _longestString = s.length();
+				}
 				return _longestString;
 			}
 		}

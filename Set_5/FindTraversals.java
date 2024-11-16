@@ -81,9 +81,9 @@ public class FindTraversals {
 			} while (__line.isEmpty());
 			
 			switch (_findTraversal) {
-				case 1 -> System.out.println("In-Order traversal" + Algorithm.Original(_findTraversal, __line));
-				case 2 -> System.out.println("Pre-Order traversal" + Algorithm.Original(_findTraversal, __line));
-				case 3 -> System.out.println("Post-Order traversal" + Algorithm.Original(_findTraversal, __line));
+				case 1 -> System.out.println("In-Order traversal: " + Algorithm.Original(_findTraversal, __line));
+				case 2 -> System.out.println("Pre-Order traversal: " + Algorithm.Original(_findTraversal, __line));
+				case 3 -> System.out.println("Post-Order traversal: " + Algorithm.Original(_findTraversal, __line));
 			}
 			
 			SpaceScreen();
@@ -93,7 +93,8 @@ public class FindTraversals {
 	// Solves the problem with a given algorithm
 	private static class Algorithm {
 		private static String Original(int p_traversal, String p_str) {
-			return "";
+			String _result = p_str;
+			return _result;
 		}
 	}
 	
