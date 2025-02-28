@@ -47,7 +47,8 @@ public class ConvertInfixMT {
 	// Plays the game
 	private static void Solve() {
 		for (int ___case = 1; ___case <= ConvertInfixMT.FileData.TestCases(); ___case++) {
-			System.out.println("Enter expression [Can up to 30 operands and operators long]: ");
+			System.out.println("*Note: It automatically detects if it's Infix or Postfix*");
+			System.out.println("Enter expression: ");
 			String _line;
 			String[] _lineArr;
 			boolean _validInput;
@@ -56,14 +57,15 @@ public class ConvertInfixMT {
 				_lineArr = _line.split(" ");
 				
 				// Helps account for user error
-				_validInput = !_line.isEmpty() && (_lineArr.length > 0) && (_lineArr.length <= 30);
+				_validInput = !_line.isEmpty();
 				if(_validInput) {
 					_validInput = Algorithm.IsInfix(_line);
 					if(_validInput) {
 						SpaceScreen();
 						// Converts the string to infix
-						if (Algorithm.IsPrefix(_line)) System.out.print("From prefix to Infix: ");
-						else System.out.print("From postfix to Infix: ");
+						if (Algorithm.IsPrefix(_line)) System.out.print("From Prefix to Infix: ");
+						else if (Algorithm.IsPostfix(_line)) System.out.print("From Postfix to Infix: ");
+						else System.out.print("From Infix to Postfix: ");
 						System.out.println(Algorithm.ConvertToInfix(_line));
 					} else {
 						System.out.println("This is not a valid equation");
@@ -72,9 +74,6 @@ public class ConvertInfixMT {
 				} else if(_line.isEmpty()) {
 					System.out.println("You entered an empty string");
 					System.out.println("Please enter a valid input\n");
-				} else {
-					System.out.println("The answer you entered was " + _lineArr.length + " operands and operators long");
-					System.out.println("Please enter an amount that is 30 or below\n");
 				}
 			} while (!_validInput);
 			
@@ -88,76 +87,118 @@ public class ConvertInfixMT {
 		
 		public static String ConvertToInfix(String p_equation) {
 			if(IsInfix(p_equation)) {
-				System.out.println(ComputeSolution(p_equation));
+				//System.out.println(ComputeSolution(p_equation));
 				//return SimplifyEquation(ComputeSolution(p_equation));
-				return ComputeSolution(p_equation);
+				//return ComputeSolution(p_equation);
+				return ComputeSimpleSolution(p_equation);
 			}
 			return "";
 		}
 		
+		
 		public static String ComputeSolution(String p_equation) {
-			String _result= "";
+			String _result = "";
 			List<String> _parts = new ArrayList<>(Arrays.stream(p_equation.split(" ")).toList());
 			
 			// This allows for prefix and postfix to be done in one method
 			// The left and right replace 'i' as the index access so that checks can be done starting from either left or right
 			// It makes the code more compact as doing two methods takes a lot of extra lines
 			boolean _isPrefix = IsPrefix(p_equation);
-			int __leftI, __rightI, _size = _parts.size();
+			boolean _isPostfix = IsPostfix(p_equation);
+			
+			int from = 0;
+			int to = _parts.size();
 			if(_isPrefix) {
-				__leftI = _parts.size() - 1;
-				__rightI = _parts.size() - 1;
-			} else {
-				__leftI = 0;
-				__rightI = 0;
+				from = _parts.size();
+				to = 0;
 			}
 			
-			for (int i = 0; i < _size; i++) {
-				// Updates left and right checks depending on if its prefix or not
-				if(_isPrefix) {
-					__leftI--; __rightI = _parts.size();
-				} else __rightI++;
-				
-				//if(__rightI >= _parts.size()) break;
-				
-				String __part = "";
-				if(_isPrefix) __part = _parts.get(__leftI);
-				else __part = _parts.get(__rightI);
-				if (Arrays.asList(m_operators).contains((__part))) {
-					// Use ignores and includes to determine what is an operator and what is not
-					// This is used to get operands of the equation and put those on the ends of operators
-					// This can also be achieved with while loops and a counter, but this is easier for me to read/write (though it's probably significantly less performant)
-					List<String> _ignores = new ArrayList<>(Arrays.stream(m_operators).toList());
-					List<String> _includes = _parts.subList(__leftI, __rightI);
-					
-					// Finds the left operand
-					String ___left = _parts.stream()
-									.filter(x -> _includes.stream().anyMatch(x::equalsIgnoreCase))
-									.filter(x -> _ignores.stream().noneMatch(x::equalsIgnoreCase)).findFirst().orElse(null);
-					_ignores.add(___left);
-					
-					// Finds the right operand
-					String ___right = _parts.stream()
-									.filter(x -> _includes.stream().anyMatch(x::equalsIgnoreCase))
-									.filter(x -> _ignores.stream().noneMatch(x::equalsIgnoreCase)).findFirst().orElse(null);
-					_ignores.add(___right);
-					
-					// Writes out that part of the equation
-					_result = "(" + ___left + " " + __part + " " + ___right + ")";
-					if(_isPrefix) {
-						_parts.set(__leftI, _result);
-						for (int ____j = 0; ____j < 2; ____j++)
-							_parts.remove(__leftI + 1);
+			for (int _oppIndex = from; _oppIndex < to; _oppIndex++) {
+				if (_parts.size() > _oppIndex && Arrays.asList(m_operators).contains(_parts.get(_oppIndex))) {
+					String _opperator = _parts.get(_oppIndex);
+					//int _oppIndex = _parts.indexOf(_opperator);
+					System.out.println("\nIndex: " + _oppIndex);
+					System.out.println("Opperator: " + _opperator);
+					System.out.println("List: " + Utils.ArrayU.ArrayToString(_parts.toArray(String[]::new), 2));
+					if (_isPrefix) {
+					} else if (_isPostfix) {
+						String left = _parts.get(_oppIndex - 2);
+						String right = _parts.get(_oppIndex - 1);
+						
+						String part = "(" + left + " " + _opperator + " " + right + ")";
+						_parts.add(_oppIndex + 1, part);
+						for (int j = 0; j < 3; j++)
+							_parts.remove(_oppIndex - 2);
+						_oppIndex -= 2;
 					} else {
-						_parts.set(__rightI, _result);
-						for (int ____j = 0; ____j < 2; ____j++)
-							_parts.remove(__rightI - 1);
-						__rightI -= 3;
+						String left = _parts.get(_oppIndex - 1);
+						String right = _parts.get(_oppIndex + 1);
+						
+						String part = left + " " + right + " " + _opperator;
+						_parts.add(_oppIndex + 2, part);
+						System.out.println(_oppIndex - 1);
+						for (int j = 0; j < 3; j++)
+							_parts.remove(_oppIndex - 1);
+						_oppIndex -= 2;
 					}
 				}
 			}
-			//return _result.replace("((", "(").replace("))", ")");
+			
+			//_result = CleanSolution(Utils.ArrayU.ArrayToString(_parts.toArray(String[]::new), 2));
+			_result = Utils.ArrayU.ArrayToString(_parts.toArray(String[]::new), 2);
 			return _result;
+		}
+		
+		public static String ComputeSimpleSolution(String p_equation) {
+			String _result = "";
+			List<String> _parts = new ArrayList<>(Arrays.stream(p_equation.split(" ")).toList());
+			
+			// This allows for  postfix to be done in one method
+			// The left and right replace 'i' as the index access so that checks can be done starting from either left or right
+			// It makes the code more compact as doing two methods takes a lot of extra lines
+			boolean _isPostfix = IsPostfix(p_equation);
+			
+			int from = 0;
+			int to = _parts.size();
+			
+			for (int _oppIndex = from; _oppIndex < to; _oppIndex++) {
+				if (_parts.size() > _oppIndex && Arrays.asList(m_operators).contains(_parts.get(_oppIndex))) {
+					String _opperator = _parts.get(_oppIndex);
+					if (_isPostfix) {
+						String left = _parts.get(_oppIndex - 2);
+						String right = _parts.get(_oppIndex - 1);
+						
+						String part = "(" + left + " " + _opperator + " " + right + ")";
+						_parts.add(_oppIndex + 1, part);
+						for (int j = 0; j < 3; j++)
+							_parts.remove(_oppIndex - 2);
+						_oppIndex -= 2;
+					} else {
+						String left = _parts.get(_oppIndex - 1);
+						String right = _parts.get(_oppIndex + 1);
+						
+						String part = left + " " + right + " " + _opperator;
+						_parts.add(_oppIndex + 2, part);
+						for (int j = 0; j < 3; j++)
+							_parts.remove(_oppIndex - 1);
+						_oppIndex -= 2;
+					}
+				}
+			}
+			
+			_result = Utils.ArrayU.ArrayToString(_parts.toArray(String[]::new), 2);
+			return _result;
+		}
+		
+		public static String CleanSolution(String p_equation) {
+			for (int i = 0; i < p_equation.length(); i++) {
+				String str = p_equation.charAt(i) + "";
+				//if(str)) { //Division and Multiplication
+				//	eq = eq.replace("(", "").replace(")", "");
+				//}
+				//p_equation[i] = eq;
+			}
+			return p_equation;
 		}
 		
 		public static String SimplifyEquation(String p_equation) {
@@ -208,6 +249,8 @@ public class ConvertInfixMT {
 		public static boolean IsInfix(String p_string) { return Arrays.stream(m_operators).anyMatch(p_string::contains); }
 		
 		public static boolean IsPrefix(String p_string) { return Arrays.stream(m_operators).anyMatch((p_string.charAt(0) + "")::equalsIgnoreCase); }
+		
+		public static boolean IsPostfix(String p_string) { return Arrays.stream(m_operators).anyMatch((p_string.charAt(p_string.length() - 1) + "")::equalsIgnoreCase); }
 	}
 	
 	// Spaces the console a bit (replaces system('cls'))
